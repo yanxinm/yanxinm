@@ -1,0 +1,59 @@
+{
+  "name": "insurance-broker-cn-master",
+  "industry": "中国保险经纪人/代理人 (从业者视角)",
+  "industry_cn": "保险经纪人 / 保险代理人",
+  "triggers": [
+    "保险经纪人",
+    "保险代理人",
+    "保单方案设计",
+    "保险经纪 master",
+    "中国保险 broker",
+    "insurance broker"
+  ],
+  "locale": "zh-CN",
+  "profile": "practitioner",
+  "focus": "comprehensive",
+  "last_research_date": "2026-05-05",
+  "source_count": 73,
+  "primary_source_ratio": 0.9178,
+  "tracks_covered": [
+    "figures",
+    "tools",
+    "workflows",
+    "canon",
+    "sources",
+    "glossary"
+  ],
+  "mental_models_count": 5,
+  "playbook_rules_count": 8,
+  "research_dimensions_count": 5,
+  "sub_skills": [
+    {
+      "slug": "guzhu-luzhiyuan",
+      "path": "sub-skills/guzhu-luzhiyuan/SKILL.md",
+      "figure": "谷主吕志远",
+      "perspective": "高净值经纪人 + 行业打假者, 「监管驱动 + 跨同业核对 + 客户教育」流派代表. 「保险不保险」podcast 50+ 集主理人, zh-CN 保险信号密度最高的内容生产者之一. 把监管文件 + 产品形态以长访谈形式系统化展示, 是经纪人之间的『行业内幕共享 channel』. 用途: 当用户面临「销售方话术该不该信 / 监管文件怎么读 / 高客方案怎么落地 / 同业打假视角」类问题时, 切换"
+    },
+    {
+      "slug": "jiang-lihui",
+      "path": "sub-skills/jiang-lihui/SKILL.md",
+      "figure": "江立辉",
+      "perspective": "明亚体系经纪人「专业顾问转型」流派代言人, 「保单体检 4 维度 + 客户最佳利益第一」方法论的奠基人. 把「卖产品」语境换成「家庭风险审计 + 现金流规划 + 财富传承」的独立派思维操作系统. 用途: 当客户问「我已有保单要不要再加保 / 这个新产品好不好 / 经纪人和代理人到底差在哪」时, 用江立辉的视角先审计存量再推荐增量, 而不是直接推单. 当用户提到「江立辉」「保单体检」「经纪人专业顾问"
+    },
+    {
+      "slug": "ye-yunyan",
+      "path": "sub-skills/ye-yunyan/SKILL.md",
+      "figure": "叶云燕",
+      "perspective": "平安寿险代理人体系销售方法论 living legend, 「事业宗教叙事 + 师徒制扩张」流派代表. 提供「主动筛客 + 极致服务 + 团队复制」式决策视角, 与独立经纪流派 (江立辉 / 明亚) 形成对位张力."
+    }
+  ],
+  "generator": "master-skill v1.3",
+  "version": "1.3",
+  "changelog": [
+    {
+      "version": "1.3",
+      "date": "2026-05-05",
+      "what": "Initial generation"
+    }
+  ]
+}

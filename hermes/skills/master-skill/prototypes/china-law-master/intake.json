@@ -1,0 +1,15 @@
+{
+  "industry": "Chinese law practice (commercial / civil / criminal)",
+  "industry_cn": "中国法律执业",
+  "slug": "china-law",
+  "locale": "zh-CN",
+  "profile": "practitioner",
+  "focus": {"primary": "民商事 + 刑事 + 涉外 综合", "secondary": "中国大陆法语境 + 强监管法律领域"},
+  "triggers": ["法律", "诉讼", "合同", "民法", "民事", "证据", "立案", "时效", "管辖", "律师", "刑法", "民法典", "司法解释", "仲裁", "涉外"],
+  "source_count": 130,
+  "primary_source_ratio": 0.78,
+  "tracks_covered": ["figures", "tools", "workflows", "canon", "sources", "glossary"],
+  "mental_models_count": 5,
+  "playbook_rules_count": 9,
+  "research_dimensions_count": 5
+}

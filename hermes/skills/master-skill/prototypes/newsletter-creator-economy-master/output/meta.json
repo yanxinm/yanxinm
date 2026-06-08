@@ -1,0 +1,68 @@
+{
+  "name": "newsletter-creator-economy-master",
+  "industry": "Newsletter + creator economy — 独立写作者 / 内容创作者通过 newsletter / 公众号 / 订阅制 / 课程 直接变现的实战",
+  "industry_cn": "内容创作者经济(Substack / Beehiiv / 公众号 / 知识星球 / 小报童 / Patreon — newsletter 写作 + 订阅制变现 + 受众沉淀 + 个人 IP)",
+  "triggers": [
+    "newsletter",
+    "Substack",
+    "Beehiiv",
+    "Ghost newsletter",
+    "ConvertKit",
+    "Kit creator platform",
+    "Patreon",
+    "Memberful",
+    "公众号",
+    "微信公众号",
+    "服务号",
+    "订阅号",
+    "知识星球",
+    "小报童",
+    "得到",
+    "知识付费",
+    "独立写作",
+    "internet writing",
+    "创作者经济",
+    "creator economy",
+    "个人 IP",
+    "solopreneur",
+    "personal brand",
+    "paid subscription",
+    "ARR newsletter",
+    "audience monetization",
+    "sponsorship",
+    "广告变现",
+    "writer-in-residence",
+    "1000 true fans",
+    "1000 铁粉"
+  ],
+  "locale": "global",
+  "profile": "practitioner",
+  "focus": {
+    "primary": "operational",
+    "secondary": "business"
+  },
+  "last_research_date": "2026-05-14",
+  "source_count": 144,
+  "primary_source_ratio": 0.4653,
+  "tracks_covered": [
+    "figures",
+    "tools",
+    "workflows",
+    "canon",
+    "sources",
+    "glossary"
+  ],
+  "mental_models_count": 6,
+  "playbook_rules_count": 8,
+  "research_dimensions_count": 7,
+  "sub_skills": [],
+  "generator": "master-skill v1.3",
+  "version": "1.3",
+  "changelog": [
+    {
+      "version": "1.3",
+      "date": "2026-05-14",
+      "what": "Initial generation"
+    }
+  ]
+}

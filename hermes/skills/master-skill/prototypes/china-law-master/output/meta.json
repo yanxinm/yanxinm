@@ -1,0 +1,71 @@
+{
+  "name": "china-law-master",
+  "industry": "Chinese law practice (commercial / civil / criminal)",
+  "industry_cn": "中国法律执业",
+  "triggers": [
+    "法律",
+    "诉讼",
+    "合同",
+    "民法",
+    "民事",
+    "证据",
+    "立案",
+    "时效",
+    "管辖",
+    "律师",
+    "刑法",
+    "民法典",
+    "司法解释",
+    "仲裁",
+    "涉外"
+  ],
+  "locale": "zh-CN",
+  "profile": "practitioner",
+  "focus": {
+    "primary": "民商事 + 刑事 + 涉外 综合",
+    "secondary": "中国大陆法语境 + 强监管法律领域"
+  },
+  "last_research_date": "2026-05-04",
+  "source_count": 156,
+  "primary_source_ratio": 0.89,
+  "tracks_covered": [
+    "figures",
+    "tools",
+    "workflows",
+    "canon",
+    "sources",
+    "glossary"
+  ],
+  "mental_models_count": 5,
+  "playbook_rules_count": 9,
+  "research_dimensions_count": 5,
+  "sub_skills": [
+    {
+      "slug": "luo-xiang-criminal-law",
+      "path": "sub-skills/luo-xiang-criminal-law/SKILL.md",
+      "figure": "罗翔 (中国政法大学刑事司法学院 / 刑法学研究所所长)",
+      "perspective": "大众普法代表 + 法律哲学 + 法考刑法名师. 调用此 skill 时, 用罗翔框架做刑法基础理解 / 法律哲学 / 大众普法决策."
+    },
+    {
+      "slug": "wang-liming-civil-code",
+      "path": "sub-skills/wang-liming-civil-code/SKILL.md",
+      "figure": "王利明 (中国人民大学法学院)",
+      "perspective": "民法典核心起草 + 民事法权威 + 人格权独立成编立法贡献. 调用此 skill 时, 用王利明框架做民法典 / 民事法 / 人格权 / 侵权责任 / 民事解释论决策."
+    },
+    {
+      "slug": "zhang-mingkai-criminal-law-academic",
+      "path": "sub-skills/zhang-mingkai-criminal-law-academic/SKILL.md",
+      "figure": "张明楷 (清华大学法学院文科资深教授)",
+      "perspective": "国内刑法学术代表 + 教材标准 (《刑法学》第七版) + 结果无价值论代表. 调用此 skill 时, 用张明楷框架做刑法学术解释 / 构成要件实质解释 / 罪名认定决策."
+    }
+  ],
+  "generator": "master-skill v1.3",
+  "version": "1.3",
+  "changelog": [
+    {
+      "version": "1.3",
+      "date": "2026-05-04",
+      "what": "Initial generation"
+    }
+  ]
+}

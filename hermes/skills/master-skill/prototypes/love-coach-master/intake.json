@@ -1,0 +1,12 @@
+{
+  "industry": "dating and relationship coaching",
+  "industry_cn": "恋爱高手",
+  "slug": "love-coach",
+  "locale": "zh-CN",
+  "profile": "practitioner",
+  "focus": {"primary": "异性吸引 + 关系经营", "secondary": "应用场景以中文圈为主"},
+  "triggers": ["恋爱", "脱单", "约会", "情感", "暧昧", "PUA", "亲密关系", "情商"],
+  "source_count": 22,
+  "primary_source_ratio": 0.45,
+  "tracks_covered": ["figures", "tools", "workflows", "canon", "sources", "glossary"]
+}

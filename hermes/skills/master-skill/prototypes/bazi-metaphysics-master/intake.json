@@ -1,0 +1,53 @@
+{
+  "industry": "八字命理 / 中华玄学算命 (从业者 + 学习者视角)",
+  "industry_cn": "八字命理 + 玄学相关数术 (子平派 / 盲派 / 新派 / 紫微斗数边界)",
+  "industry_en": "Bazi (Four Pillars of Destiny) + adjacent Chinese metaphysics — practitioner and learner perspective",
+  "industry_type": "knowledge_system_practitioner",
+  "slug": "bazi-metaphysics",
+  "focus": {"primary": "operational", "secondary": "academic"},
+  "locale": "zh-CN",
+  "profile": "practitioner",
+  "local_materials": {
+    "mode": "none",
+    "paths": [],
+    "covered_tracks": []
+  },
+  "existing_skill": {
+    "found": false,
+    "path": null,
+    "last_research_date": null,
+    "decision": "new"
+  },
+  "triggers": [
+    "八字",
+    "命理",
+    "排盘",
+    "八字命盘",
+    "用神",
+    "大运",
+    "流年",
+    "干支",
+    "子平",
+    "盲派",
+    "玄学",
+    "紫微斗数边界",
+    "命主",
+    "造大师 八字",
+    "蒸八字",
+    "四柱"
+  ],
+  "warnings": [
+    "强冷僻 + 半敏感行业: zh-CN 公开材料以个人 IP / 短视频自媒体 / 命理软文 为主, 严肃学术 canon 集中在古籍 (子平真诠 / 滴天髓 / 穷通宝鉴 / 渊海子平 / 三命通会) + 民国近代整理 (徐乐吾 / 韦千里) + 当代少数学院派. cold-deep-mode 几乎确定触发: 自动从古籍版本 + 港台命理出版社 + 学院派 (台湾大学 / 北京大学 等) 哲学/历史系论文 + 少数 reputable 命理人长讲 多源补充, 不靠瞎搜兜底.",
+    "中华人民共和国大陆法律语境敏感: 算命 / 看相 等商业活动受 治安管理处罚法 + 反封建迷信 等管辖, 商业接客有合规风险. master skill 蒸的是 **知识体系 + 思维框架 + 古籍学习路径**, 不是 接客话术 / 收费模板; 港台 + 海外华人地区合法.",
+    "学派分歧大: 子平派 (古法格局 + 用神扶抑) / 盲派 (象法 + 实战速断) / 新派 (现代心理学 + 系统化教学) — 三派对同一八字可以给出不同结论, 蒸馏要保留分歧, 不要平均化.",
+    "玄学 ≠ 八字: 玄学涵盖 周易 / 紫微斗数 / 风水 / 奇门遁甲 / 大六壬 / 梅花易数 等. 本 skill 以 八字命理 为主轴, 玄学其他数术作为知识地图边界 (用户问到时可指引)."
+  ],
+  "research_strategy_notes": [
+    "Wave 1 collectors 在中文环境基本无效 (github_topics / arxiv 都不适用; podcast_rss 可尝试找'命理'/'紫微'类小众节目). 主要靠 Web Search + 中文圈 reputable 命理出版社目录 + 命理人主页.",
+    "黑名单严格执行: 知乎 / 微信公众号 / 百度百科 / CSDN / 头条号 等内容农场全部排除. 例外: 命理人在自己的微信公众号 / B站频道 / 个人博客 上的原创长文 (作者 = source) 可作 surrogate_primary.",
+    "古籍内容: 用 ctext.org / archive.org / 中华书局繁体 / 大陆古籍出版社 整理本作主源, 民国整理本 (徐乐吾 / 任铁樵 / 韦千里) 作主要二次解读.",
+    "诚实边界要写死: 本 skill 蒸的是认知体系 + 学派分歧 + 古籍研读路径, 不是命主前途的具体预测; 不替代 (a) 命主自身决策 (b) 心理咨询 / 医疗建议 (c) 商业策略."
+  ],
+  "tested_at": "2026-05-07",
+  "purpose": "v1.4 升级后第 10 个 prototype — 验证 cold-deep-mode + 学派分歧保留 + 古籍体系蒸馏 + 强敏感领域诚实边界, 全部走标准 6-track + Source Manifest + claim_verifier 链路."
+}

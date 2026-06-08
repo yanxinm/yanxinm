@@ -1,0 +1,12 @@
+{
+  "industry": "cross-border e-commerce operations",
+  "industry_cn": "跨境电商运营",
+  "slug": "cross-border-ecommerce",
+  "locale": "zh-CN",
+  "profile": "practitioner",
+  "focus": {"primary": "Amazon EU operations", "secondary": "compliance + ad strategy"},
+  "triggers": ["跨境电商", "亚马逊运营", "Amazon EU", "VAT", "包装法", "选品"],
+  "source_count": 30,
+  "primary_source_ratio": 0.55,
+  "tracks_covered": ["figures", "tools", "workflows", "canon", "sources", "glossary"]
+}

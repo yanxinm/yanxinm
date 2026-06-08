@@ -1,0 +1,20 @@
+{
+  "name": "city-culture-tourism-newmedia-master",
+  "industry": "Traditional News Media New Media — City Promotion & Cultural Tourism",
+  "industry_cn": "传统新闻行业新媒体·城市宣传文旅方向",
+  "triggers": ["城市宣传","文旅新媒体","融媒体中心","城市品牌","政务新媒体","城市IP","目的地营销","DMO","城市种草","文旅传播","城市文旅"],
+  "locale": "zh-CN",
+  "profile": "practitioner",
+  "focus": "comprehensive",
+  "last_research_date": "2026-05-16",
+  "source_count": 89,
+  "primary_source_ratio": 0.42,
+  "tracks_covered": ["figures", "tools", "workflows", "canon", "sources", "glossary"],
+  "mental_models_count": 6,
+  "playbook_rules_count": 8,
+  "research_dimensions_count": 7,
+  "sub_skills": [],
+  "generator": "master-skill v1.4",
+  "version": "1.0.0",
+  "changelog": []
+}

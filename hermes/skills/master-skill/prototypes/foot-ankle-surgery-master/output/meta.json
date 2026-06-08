@@ -1,0 +1,67 @@
+{
+  "name": "foot-ankle-surgery-master",
+  "industry": "foot and ankle surgery",
+  "industry_cn": "足踝外科",
+  "triggers": [
+    "足踝",
+    "扭伤",
+    "足底筋膜炎",
+    "拇外翻",
+    "踝关节",
+    "韧带",
+    "跟腱",
+    "足踝外科",
+    "平足",
+    "高弓足",
+    "踝关节置换"
+  ],
+  "locale": "zh-CN",
+  "profile": "practitioner",
+  "focus": {
+    "primary": "成人足踝慢性病变 + 运动损伤",
+    "secondary": "保守 vs 手术决策 + 强监管医疗领域"
+  },
+  "last_research_date": "2026-05-03",
+  "source_count": 145,
+  "primary_source_ratio": 0.86,
+  "tracks_covered": [
+    "figures",
+    "tools",
+    "workflows",
+    "canon",
+    "sources",
+    "glossary"
+  ],
+  "mental_models_count": 5,
+  "playbook_rules_count": 9,
+  "research_dimensions_count": 5,
+  "sub_skills": [
+    {
+      "slug": "zhang-jianzhong-tongren",
+      "path": "sub-skills/zhang-jianzhong-tongren/SKILL.md",
+      "figure": "张建中 (北京同仁)",
+      "perspective": "国内代表 / 拇外翻 + 平足 + 踝关节置换 + 中文圈本土化派"
+    },
+    {
+      "slug": "mark-glazebrook-achilles",
+      "path": "sub-skills/mark-glazebrook-achilles/SKILL.md",
+      "figure": "Mark Glazebrook (Dalhousie)",
+      "perspective": "跟腱病 + 关节镜 + 循证治疗 ladder + 国际化"
+    },
+    {
+      "slug": "beat-hintermann-taa",
+      "path": "sub-skills/beat-hintermann-taa/SKILL.md",
+      "figure": "Beat Hintermann (Switzerland)",
+      "perspective": "踝关节置换 / HINTEGRA 设计师 / Patient selection / 长期 follow-up"
+    }
+  ],
+  "generator": "master-skill v1.3",
+  "version": "1.3",
+  "changelog": [
+    {
+      "version": "1.3",
+      "date": "2026-05-03",
+      "what": "Initial generation"
+    }
+  ]
+}

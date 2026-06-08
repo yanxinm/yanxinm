@@ -1,0 +1,12 @@
+{
+  "industry": "SEO (search engine optimization)",
+  "industry_cn": "SEO 专家",
+  "slug": "seo",
+  "locale": "zh-CN",
+  "profile": "practitioner",
+  "focus": {"primary": "Google + 中文站", "secondary": "技术 SEO + 内容 SEO"},
+  "triggers": ["SEO", "搜索引擎优化", "排名", "外链", "页面优化", "Google", "百度"],
+  "source_count": 28,
+  "primary_source_ratio": 0.55,
+  "tracks_covered": ["figures", "tools", "workflows", "canon", "sources", "glossary"]
+}

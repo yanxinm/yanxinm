@@ -1,0 +1,31 @@
+{
+  "industry": "LLM agent infra",
+  "industry_cn": "LLM agent 基础设施",
+  "slug": "llm-agent-infra",
+  "focus": "comprehensive",
+  "locale": "global",
+  "profile": "practitioner",
+  "triggers": [
+    "agent framework",
+    "LLM agent",
+    "agent infra",
+    "multi-agent orchestration",
+    "agent runtime",
+    "tool use",
+    "RAG",
+    "agent observability"
+  ],
+  "local_materials": {
+    "mode": "none",
+    "paths": [],
+    "covered_tracks": []
+  },
+  "existing_skill": {
+    "found": false,
+    "path": null,
+    "last_research_date": null,
+    "decision": "new"
+  },
+  "warnings": [],
+  "notes": "Prototype run iter 21 — minimal-viable scope: 5 figures / 8 tools / 3 workflows / 8 canon / 8 sources / 15 glossary"
+}

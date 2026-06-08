@@ -1,0 +1,64 @@
+{
+  "name": "love-coach-master",
+  "industry": "dating and relationship coaching",
+  "industry_cn": "恋爱高手",
+  "triggers": [
+    "恋爱",
+    "脱单",
+    "约会",
+    "情感",
+    "暧昧",
+    "PUA",
+    "亲密关系",
+    "情商"
+  ],
+  "locale": "zh-CN",
+  "profile": "practitioner",
+  "focus": {
+    "primary": "异性吸引 + 关系经营",
+    "secondary": "应用场景以中文圈为主"
+  },
+  "last_research_date": "2026-05-03",
+  "source_count": 121,
+  "primary_source_ratio": 0.82,
+  "tracks_covered": [
+    "figures",
+    "tools",
+    "workflows",
+    "canon",
+    "sources",
+    "glossary"
+  ],
+  "mental_models_count": 5,
+  "playbook_rules_count": 9,
+  "research_dimensions_count": 5,
+  "sub_skills": [
+    {
+      "slug": "john-gottman",
+      "path": "sub-skills/john-gottman/SKILL.md",
+      "figure": "John Gottman (Gottman Institute)",
+      "perspective": "循证婚姻研究 / Four Horsemen + 5:1 + Cascade"
+    },
+    {
+      "slug": "sue-johnson-eft",
+      "path": "sub-skills/sue-johnson-eft/SKILL.md",
+      "figure": "Sue Johnson (EFT)",
+      "perspective": "依恋驱动 / EFT 7 Conversations / Hold Me Tight"
+    },
+    {
+      "slug": "esther-perel",
+      "path": "sub-skills/esther-perel/SKILL.md",
+      "figure": "Esther Perel",
+      "perspective": "长期关系悖论 / Eroticism / Modern Burden / 出轨现代解读"
+    }
+  ],
+  "generator": "master-skill v1.3",
+  "version": "1.3",
+  "changelog": [
+    {
+      "version": "1.3",
+      "date": "2026-05-03",
+      "what": "Initial generation"
+    }
+  ]
+}

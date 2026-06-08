@@ -1,0 +1,141 @@
+{
+  "industry": "AI Product Manager — LLM application / generative AI / agent product 的产品经理实战",
+  "industry_cn": "AI 产品经理 (LLM 应用 / 生成式 AI / Agent 产品 / Copilot 嵌入 — 跨模型评估 / 工作流设计 / 产品-工程协同)",
+  "industry_en": "AI Product Manager — practitioner role at intersection of traditional product management and LLM/generative-AI application engineering: scoping, eval-driven iteration, prompt + RAG + agent design, model selection, cost-quality tradeoffs, multimodal product surfaces",
+  "industry_type": "cross_functional_practitioner",
+  "slug": "ai-product-manager",
+  "focus": {
+    "primary": "operational",
+    "secondary": "technical"
+  },
+  "locale": "global",
+  "profile": "practitioner",
+  "local_materials": {
+    "mode": "none",
+    "paths": [],
+    "covered_tracks": []
+  },
+  "existing_skill": {
+    "found": false,
+    "path": null,
+    "last_research_date": null,
+    "decision": "new"
+  },
+  "skip_sub_skills": false,
+  "_auto_mode_note": "本 intake 由 2h 蒸馏 cron 自动生成,无 1-1 用户对话。Phase 1 启动前若需修正,直接改本文件。",
+  "triggers": [
+    "AI 产品经理",
+    "AI PM",
+    "LLM 产品",
+    "Generative AI product",
+    "RAG 产品",
+    "agent 产品",
+    "Copilot 类产品",
+    "AI 助手",
+    "AI 工具",
+    "多模态产品",
+    "model eval",
+    "evaluation",
+    "prompt engineering",
+    "prompt 工程",
+    "model selection",
+    "context window 设计",
+    "AI 数据飞轮",
+    "AI feature gating",
+    "AI 成本控制",
+    "幻觉控制",
+    "hallucination",
+    "AI 失败模式",
+    "AI 安全 / 红队",
+    "AI roadmap",
+    "BrainTrust",
+    "LangSmith",
+    "vector DB 产品"
+  ],
+  "core_subdomains_candidates": [
+    "LLM 应用产品(对话助手 / Copilot / agent / 工作流嵌入式 AI)",
+    "Eval-driven 产品迭代(offline eval / golden set / 在线 A/B / 人工标注 / 自动评估器)",
+    "Prompt + Context 工程(system prompt / few-shot / chain-of-thought / context window 设计)",
+    "RAG 产品设计(向量库 / 检索质量 / 引用展示 / 上下文新鲜度)",
+    "Agent 产品(工具调用 / 多步推理 / 失败回退 / 用户控制权设计)",
+    "多模态产品(图 / 视频 / 音频 / 跨模态生成 — 用户预期与延迟管理)",
+    "模型选型与切换(成本 vs 质量 vs 延迟三角)",
+    "AI 数据飞轮(用户反馈循环 → 数据 → 模型升级 → 产品差异化)",
+    "AI 失败 + 安全(幻觉 / 越狱 / 偏见 / 用户信任修复)",
+    "AI 产品 GTM(差异化定位 / 定价 / 教育用户 / 处理 AI 焦虑或炒作)",
+    "AI 团队协作(PM + ML 工程师 + 数据 + 标注 + 法务 + 安全的协作模式)"
+  ],
+  "key_figures_candidates": [
+    "Marily Nika — 前 Google / Meta AI PM,《Building AI-Powered Products》作者,AI PM Bootcamp 创办",
+    "Aakash Gupta — Product Growth 顾问 + newsletter,频繁覆盖 AI PM 主题",
+    "Lenny Rachitsky — Lenny's Newsletter 创办,综合 PM 但 AI 专题访谈含金量高",
+    "Linus Lee — Notion AI 早期 PM / 研究员,公开写作",
+    "Pete Huang — The Generalist newsletter 作者,AI 商业洞察",
+    "Casey Caruso — Vercel / Perplexity 类公司 PM 视角",
+    "Hilary Mason — 数据 / AI 产品历史人物(Cloudera / Accel)",
+    "国内:朋克熊(《AI 产品经理:从 0 到 1》作者)/ 唐辰(混沌 AI / 元帅训练营创办)/ Plus(公众号)/ 凡人小北(知乎 AI 产品高赞答主)/ Ronghuiyou(字节 AI PM 圈)",
+    "学派:OpenAI / Anthropic 产品发布发布人(Aravind, Olivia Pichet 等)+ 大公司 AI 副总裁(Mira Murati / Kevin Weil 等)"
+  ],
+  "key_tools_candidates": [
+    "LLM API:OpenAI / Anthropic / Google Gemini / DeepSeek / Qwen / GLM / Moonshot",
+    "Eval 平台:LangSmith / BrainTrust / Arize Phoenix / OpenAI Evals / Promptfoo",
+    "Prompt 管理:LangFuse / PromptLayer / Helicone / Pezzo",
+    "RAG / Vector DB:Pinecone / Weaviate / Qdrant / Chroma / pgvector",
+    "数据标注:Surge AI / Scale AI / Argilla / Label Studio",
+    "实验 / A/B:Statsig / Eppo / LaunchDarkly + LD AI / Optimizely",
+    "Agent 框架(产品视角):LangChain / LlamaIndex / DSPy / Mastra(社区) / Anthropic SDK / OpenAI Assistants API",
+    "模型监控:Datadog LLM Observability / Lakera / Whylabs",
+    "用户反馈:Pendo / Sprig / Hotjar(AI 专属反馈尚未成熟)",
+    "工程协作:Linear / Jira / Notion / Figma(AI 产品的设计 surface 多样)"
+  ],
+  "information_sources_candidates": [
+    "Lenny's Newsletter + Lenny's Podcast(综合 PM,AI 专题访谈)",
+    "Aakash Gupta's Product Growth newsletter",
+    "AI PM Bookclub(Marily Nika 系)",
+    "Reforge(收费但有 AI PM 课程)",
+    "Hugging Face blog + OpenAI blog + Anthropic newsletter(一手模型 + 产品迭代)",
+    "ArXiv(选读:eval / RAG / agent 论文)",
+    "Twitter/X:Karpathy / Aravind / Simon Willison / swyx / Hamel Husain / Eugene Yan",
+    "公众号:混沌大学 / PMTalk / 人人都是产品经理(AI 专栏)/ Plus 评测 / 朋克熊",
+    "YouTube:Lenny / Aakash / 1843 Studio / a16z AI",
+    "Podcast:Latent Space / The Cognitive Revolution / a16z AI / Eye on AI / Lenny's",
+    "国内:即刻 AI 产品圈 / 小红书 AI PM 专栏 / 知乎 AI 产品话题 / 飞书文档行业模板",
+    "书:《Building AI-Powered Products》(Marily Nika)/ 《Inspired》(Marty Cagan, PM 基础课)/ 《AI 产品经理:从 0 到 1》(朋克熊,国内入门)",
+    "学术 / 业界结合:Eugene Yan 博客 / Hamel Husain 博客 / Chip Huyen 博客 / Simon Willison 博客"
+  ],
+  "warnings": [
+    "角色定义严重不统一:同一职位「AI 产品经理」可指(1)传统 PM + AI 项目 (2)技术 PM (PM + ML 工程能力) (3)模型评估专员 + PM (4)AI 应用业务负责人。SKILL.md 必须先讲清楚「在你公司里 AI PM 大致对应哪种」,避免读者期望落空。",
+    "技能保鲜期极短:GPT-4 时代的 prompt 工程心法在 GPT-4o / Claude 3.5 时代多数过时;RAG 设计在长 context 模型(2M token)下重要性下降;agent 框架 2023 年的 LangChain 经典写法 2025 年被批为「过度抽象」。SKILL.md 要诚实写「日历有效期 6-12 个月,过则重新校准」。",
+    "信噪比极差:大量「7 天速成 AI PM」「AI PM 月入 5 万」课程营销,真知识被掩埋。研究时需狠筛课程导流 + speculative blog post。",
+    "学派分歧大:1)模型派 (在 frontier 模型上做轻应用,等待模型自身升级 cover 一切)vs 2)工作流派 (把 AI 嵌入现有 SaaS 工作流,核心价值在 workflow 而非模型) vs 3)agent 派(LLM + tools + memory 自主决策)vs 4)数据飞轮派 (差异化在私有数据 + RLHF + fine-tune)。同一产品决策各派给完全不同建议。",
+    "国内外路径差异大:海外 AI PM 偏「产品 sense + 一定技术理解」,国内 AI PM 在公司里常被推到「PM + 部分工程 + 部分销售」全能岗,职责范围比海外大但深度受限。",
+    "「prompt engineering 是 AI PM 核心技能」是片面认知:真正核心是 (a) eval 设计 (b) 产品 fit 判断 (c) 团队协作 - prompt 工程只是输出之一。",
+    "工资 / 招聘 / 晋升信息不透明:2024-2025 AI PM 薪资跨度 80k-400k USD(海外),50w-150w RMB(国内);但同 title 同公司差异极大。SKILL.md 避免给具体数字。",
+    "成本控制是被忽视的硬技能:多数 AI PM 课程不教「token 单价 × 用户行为 × 留存 → 单用户经济模型」,但这是产品能不能 ship 的硬约束。"
+  ],
+  "research_strategy_notes": [
+    "Track 01 figures: 海外 Marily Nika / Aakash Gupta / Lenny / Linus Lee / Hilary Mason + OpenAI/Anthropic 高管 + 几位 Twitter 大 V(Karpathy/swyx/Hamel/Eugene/Simon Willison)。国内朋克熊 + Plus + 混沌大学几位老师 + 知乎几位高赞。每人挑一个公开作品(书 / newsletter / podcast)做一手研究,不要传话。",
+    "Track 02 tools: 5 大类(LLM API / Eval / Prompt / RAG / Agent 框架)+ 配套(监控 + 实验 + 标注)。每个类别 3-5 个工具,要给「2025 业界 default choice」+「为什么这么选」+「2024 年此类的退潮工具(如 LangChain 经典模式)」",
+    "Track 03 workflow: 一个 AI 产品从「想法 → POC → MVP → 生产 → 数据飞轮」的完整路径,以及每个阶段 PM 的 5-10 个标准动作。重点画清「和传统 PM 的差异」+「和 ML 工程师的边界」。",
+    "Track 04 canon: 书(Marily Nika / Cagan / 朋克熊)+ 几篇标杆 blog (Eugene Yan / Chip Huyen / Hamel Husain / Simon Willison) + 几个会议 talk (Anthropic developer day / OpenAI dev day / AI Engineer Summit)",
+    "Track 05 sources: Lenny / Aakash / Reforge + 国内混沌 / PMTalk / 朋克熊 + 几个一手 podcast (Latent Space / Cognitive Revolution),挑 5-8 篇标杆文章 / 10 集左右 podcast",
+    "Track 06 academic: ArXiv eval / RAG / agent 几篇关键论文 + 几个 Stanford / MIT 课件(CS324, CS324H) — 预计中等产出",
+    "诚实边界:绝不写「AI PM 银弹方法论」。给「2025 年此时此刻业界共识」+「明显分歧」+「保鲜期 6 个月」标签。"
+  ],
+  "deduplication_check": {
+    "checked_dirs": [
+      "skill/prototypes/llm-agent-infra-master(LLM agent 基础设施 — 工程视角,本 skill 是产品视角)",
+      "skill/prototypes/monetize-agents-master(AI 商业化 — 重商业模式,本 skill 重产品本身)"
+    ],
+    "overlap_assessment": "与 llm-agent-infra 重叠 ~20%(都涉及 RAG / agent / eval),但视角完全不同:llm-agent-infra 是 SRE / 工程师怎么搭基础设施,ai-product-manager 是 PM 怎么决定该 ship 什么 / 怎么 ship。与 monetize-agents 重叠 ~15%(都涉及 GTM 但 AI PM 更重产品),独立 skill 可行。"
+  },
+  "estimated_research_effort": {
+    "track_01_figures": "medium (海外 + 国内合计 12-15 个核心人物)",
+    "track_02_tools": "heavy (10 大类工具,每个要 3-5 个 + 选型 rationale)",
+    "track_03_workflow": "heavy (端到端 5-stage workflow,每阶段 5-10 个动作)",
+    "track_04_canon": "medium (3-4 本书 + 5-8 篇 blog + 3-4 个 talk)",
+    "track_05_sources": "medium-heavy (海外 4-5 newsletter + podcast + 国内 3-4 公众号)",
+    "track_06_academic": "medium (5-8 篇论文 + 2-3 个课件)",
+    "estimated_total_hours": "30-40h 高质量调研 + 12-16h synthesis(单人估算,可并行)"
+  }
+}

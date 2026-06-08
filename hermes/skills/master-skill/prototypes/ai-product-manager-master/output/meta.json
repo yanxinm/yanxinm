@@ -1,0 +1,64 @@
+{
+  "name": "ai-product-manager-master",
+  "industry": "AI Product Manager — LLM application / generative AI / agent product 的产品经理实战",
+  "industry_cn": "AI 产品经理 (LLM 应用 / 生成式 AI / Agent 产品 / Copilot 嵌入 — 跨模型评估 / 工作流设计 / 产品-工程协同)",
+  "triggers": [
+    "AI 产品经理",
+    "AI PM",
+    "LLM 产品",
+    "Generative AI product",
+    "RAG 产品",
+    "agent 产品",
+    "Copilot 类产品",
+    "AI 助手",
+    "AI 工具",
+    "多模态产品",
+    "model eval",
+    "evaluation",
+    "prompt engineering",
+    "prompt 工程",
+    "model selection",
+    "context window 设计",
+    "AI 数据飞轮",
+    "AI feature gating",
+    "AI 成本控制",
+    "幻觉控制",
+    "hallucination",
+    "AI 失败模式",
+    "AI 安全 / 红队",
+    "AI roadmap",
+    "BrainTrust",
+    "LangSmith",
+    "vector DB 产品"
+  ],
+  "locale": "global",
+  "profile": "practitioner",
+  "focus": {
+    "primary": "operational",
+    "secondary": "technical"
+  },
+  "last_research_date": "2026-05-14",
+  "source_count": 159,
+  "primary_source_ratio": 0.522,
+  "tracks_covered": [
+    "figures",
+    "tools",
+    "workflows",
+    "canon",
+    "sources",
+    "glossary"
+  ],
+  "mental_models_count": 6,
+  "playbook_rules_count": 10,
+  "research_dimensions_count": 7,
+  "sub_skills": [],
+  "generator": "master-skill v1.3",
+  "version": "1.3",
+  "changelog": [
+    {
+      "version": "1.3",
+      "date": "2026-05-14",
+      "what": "Initial generation"
+    }
+  ]
+}

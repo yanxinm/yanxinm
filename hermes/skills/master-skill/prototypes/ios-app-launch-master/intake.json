@@ -1,0 +1,60 @@
+{
+  "industry": "iOS App Store launch — submission, review, ASO, compliance, post-launch monetization",
+  "industry_cn": "iOS 应用上架大师 (审核 + ASO + 合规 + 国内/海外多区 + 付费策略)",
+  "industry_en": "iOS App Launch — Apple App Store / App Review / TestFlight / ASO / privacy & compliance / Chinese mainland special handling / multi-region / subscription monetization",
+  "industry_type": "platform_specific_practitioner",
+  "slug": "ios-app-launch",
+  "focus": {"primary": "operational", "secondary": "technical"},
+  "locale": "global",
+  "profile": "practitioner",
+  "local_materials": {
+    "mode": "none",
+    "paths": [],
+    "covered_tracks": []
+  },
+  "existing_skill": {
+    "found": false,
+    "path": null,
+    "last_research_date": null,
+    "decision": "new"
+  },
+  "skip_sub_skills": true,
+  "_skip_reason": "用户明确指示 '不需要蒸馏人物' (Telegram msg 862). 本轮跳过 Phase 3.3-3.5 nuwa-style person sub-skills, 但 Track 01 figures 调研保留 (人物地图是行业认知一部分, 跟 sub-skill 蒸馏不同)",
+  "triggers": [
+    "iOS 上架",
+    "App Store 上架",
+    "App 审核",
+    "App Review",
+    "TestFlight",
+    "App Store Connect",
+    "ASO",
+    "审核被拒",
+    "rejection",
+    "App Review Guidelines",
+    "iOS 隐私",
+    "ATT",
+    "App Tracking Transparency",
+    "应用上架",
+    "iOS 发布",
+    "上架大师"
+  ],
+  "warnings": [
+    "Apple 政策高频变化 (年度 WWDC + 季度 App Store Connect 更新 + iOS major version 每年 1 次): App Review Guidelines / privacy disclosure / ATT / In-App Purchase 规则 12 月内可能多次微调. 12 月以前的攻略多数已过时.",
+    "中国大陆 vs 海外法律 / 流程完全不同: 大陆需 ICP 备案 (工信部) + 算法备案 (网信办, 2025-2026 持续收紧) + 游戏版号 (出版署, 仅游戏) + 应用市场审核 (华为/小米/OPPO/vivo/腾讯/百度/360/小米 等 8-10 家国内市场各自审核). 海外只有 Apple App Store 一家.",
+    "学派分歧: 海外 indie (Marco Arment / David Smith / Federico Viticci 路径) vs 大厂 release engineering (TikTok / Lyft / Stripe iOS 团队) vs ASO 优化派 (Sensor Tower / Mobile Action 系) vs 国内合规派 (鸟哥笔记 / 七麦数据 / 国内 SaaS 出海) vs 反 Apple 派 (Spotify / Epic Games / Basecamp 反垄断阵营). 同一审核问题各派给不同建议.",
+    "拒绝率信息有限: Apple 不公开 rejection rate, 2024-2025 业内估计 20-40%. 多数 rejection 是 metadata + 隐私披露问题, 少数是 functional/design.",
+    "信源 signal-to-noise: 海外有 reasonable 比例严肃 dev 长 thread (Marco Arment / Federico Viticci / Sebastiaan de With / Indie Hackers founder interviews), 国内主要靠 鸟哥笔记 / 七麦数据 + B站长讲 + 应用市场官方 docs. 营销号占 70%+.",
+    "本轮跳过 Phase 3 sub-skills (用户明确), 节省 1 个 cron 周期"
+  ],
+  "research_strategy_notes": [
+    "海外 Track 01 figures: Apple 官方 (App Review team, Phil Schiller / Tim Cook 在 App Store 法律案件中的发言) + Indie dev 标杆 (Marco Arment Overcast / David Smith Pedometer++/Widgetsmith / Federico Viticci MacStories / Sebastiaan de With Halide / Sayre Coombs / Joe Cieplinski) + ASO 派 (Thomas Petit / Gabriel Machuret) + 反 Apple 派 (Tim Sweeney / Daniel Ek)",
+    "国内 Track 01: 鸟哥笔记 (yowoo.com) / 七麦数据 (qimai.cn) 官方 / 国内出海创业者长访谈 (硬地骇客 / 张小珺商业访谈录 / 一席). 国内 App Store Connect 中文专员经验长文.",
+    "Track 02 tools: App Store Connect (Apple 官方) + Xcode + TestFlight + Fastlane (build automation) + Sensor Tower / data.ai / Mobile Action / AppFollow / 七麦数据 (国内) / 鸟哥笔记ASO. 监控: Firebase Crashlytics / Sentry / MetricKit. 订阅: RevenueCat (subscription infra). 隐私: OneTrust / Privacy Manifest.",
+    "Track 03 workflows: 1) Pre-submission HIG/checklist 2) App Store Connect 配置 3) TestFlight beta 4) 提审 + rejection 处理 5) Launch ASO 6) 多区策略 (US/EU/CN) 7) 隐私合规 (ATT/Privacy Manifest/GDPR/网信办) 8) 订阅/付费优化",
+    "Track 04 canon: Apple 官方 (App Review Guidelines / HIG / App Store Connect Help / WWDC sessions 长视频) + 经典书 (《App Store Optimization》by Gabriel Machuret / 《Beyond the Basics》Apple 出版) + 国内 (《App Store 上架与运营指南》). 反例: rejection corpus + Sweeney/Spotify 反垄断诉讼文档",
+    "黑名单严格: 知乎付费回答 / 微信公众号软文 / Apple 官方文档过期版本 (Apple 持续更新, 12 月以前 Apple Developer site 内容多过时) / 内容农场 listicle. 接受: Apple 官方 docs + WWDC + 严肃 dev 个人博客 + Indie Hackers 长文 + 七麦/鸟哥笔记官方 + 国内 SaaS 出海创业者长访谈 + 反垄断诉讼一手文档.",
+    "诚实边界写死: (a) Apple App Review 是黑盒, 任何 'guarantee 通过审核' 的承诺都假 (b) 政策变化频繁, 12 月内 update (c) 不蒸 fraudulent / TOS 违规玩法 (作弊审核 / fake review / 越狱 sideload distribution) (d) 大陆与海外是两套体系, 一刀切建议会犯错"
+  ],
+  "tested_at": "2026-05-10",
+  "purpose": "v1.5 后第 12 个 prototype — 验证大师.skill 对'平台specific + 政策高变化 + 双合规体系 (海外 Apple 单家 vs 国内 Apple+ICP+算法备案+8-10 应用市场)' 行业的处理. 跳过 sub-skills 验证 prompt-level skip flag 工作."
+}

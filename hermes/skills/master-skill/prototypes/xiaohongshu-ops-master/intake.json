@@ -1,0 +1,12 @@
+{
+  "industry": "xiaohongshu operations",
+  "industry_cn": "小红书运营",
+  "slug": "xiaohongshu-ops",
+  "locale": "zh-CN",
+  "profile": "practitioner",
+  "focus": {"primary": "品牌账号运营", "secondary": "内容种草 + 投流"},
+  "triggers": ["小红书", "种草", "薯条", "信息流", "笔记", "笔记测评"],
+  "source_count": 25,
+  "primary_source_ratio": 0.50,
+  "tracks_covered": ["figures", "tools", "workflows", "canon", "sources", "glossary"]
+}

@@ -1,0 +1,58 @@
+{
+  "industry": "Monetizing AI agents — building businesses (B2B SaaS / B2C tools / consulting / indie hacker / API arbitrage) around AI agent products and services",
+  "industry_cn": "用 AI agent 赚钱 / agent 商业化 (创业 + 副业 + 咨询 + indie hacker)",
+  "industry_en": "Monetize AI agents — practitioner perspective for builders / founders / indie hackers / consultants making revenue from agent products",
+  "industry_type": "emerging_commercial_practitioner",
+  "slug": "monetize-agents",
+  "focus": {"primary": "operational", "secondary": "business"},
+  "locale": "global",
+  "profile": "practitioner",
+  "local_materials": {
+    "mode": "none",
+    "paths": [],
+    "covered_tracks": []
+  },
+  "existing_skill": {
+    "found": false,
+    "path": null,
+    "last_research_date": null,
+    "decision": "new"
+  },
+  "triggers": [
+    "agent business",
+    "monetize agents",
+    "AI agent SaaS",
+    "agent creator",
+    "agent indie hacker",
+    "agent automation business",
+    "用 agent 赚钱",
+    "agent 商业化",
+    "agent 创业",
+    "agent 副业",
+    "AI agent 变现",
+    "agent consulting",
+    "AI 工作流卖钱",
+    "agent freelance"
+  ],
+  "warnings": [
+    "新兴行业 (2024-2026 才真正成型) — 公开材料量大但水分极高: 90% 是 X / Twitter 短帖 + YouTube 短视频 + 营销号 + 内容农场 + AI hype. cold-deep-mode 不在于 thin (量是足的), 在于 signal-to-noise 极差. 严肃材料集中在: a16z / Sequoia / Lightspeed 等 VC 报告 + Latent Space / Lenny / How AI Is Built podcast 长访谈 + Cognition / Lindy / Manus / LangChain 创始人长讲 + Indie Hackers / MicroConf 真实案例 + 经典 SaaS 创业书 (Crossing the Chasm / Lean Analytics / Hooked / The Lean Startup 在 agent 时代的重新解读).",
+    "学派分歧大且互相挑衅:",
+    "  - B2B SaaS enterprise 派: 高 ACV / 长销售 / 重 procurement (Cognition Devin / Lindy / Glean / Sierra)",
+    "  - 个人 / indie hacker 派: 短决策 / 自我营销 / X 流量驱动 (Pieter Levels / Marc Lou / Danny Postma)",
+    "  - API arbitrage 派: 包装 LLM API + 利润率 (短期 + 受 LLM 价格降速冲击, 衰减极快)",
+    "  - 咨询服务派: 给传统企业 agent 落地, 高客单不可规模化 (Hamel Husain / Eugene Yan)",
+    "  - 内容农场 / SEO 派: 用 agent 批量生产 (灰色, Google 反爬, 衰减极快)",
+    "  - 开源 + hosted 派: open framework + 卖 cloud (LangChain / LlamaIndex / Mastra)",
+    "时效衰减极快: agent 工具 + 模型价格 + 头部 product 矩阵每 3-6 月可能洗一遍, 工作流 / canon / 信源 同样高 decay. 古典 SaaS 创业书 (Crossing the Chasm / Built to Last) 不变, 但 GTM / 定价 / 用户获取 完全是 agent-时代-specific.",
+    "重要 ethical / 法律边界: API arbitrage / 内容农场 / 自动化 spam / 信任套利 等灰色玩法存在但不蒸馏 (违反平台 ToS + 用户信任 + 监管风险). 蒸馏聚焦合法 + 长期可持续的商业模式.",
+    "国内 (zh-CN) 的 agent 商业化跟英文圈差异大: 国内主要是 SaaS to 大企业 + 政府 (扣子 / 智谱 / 月之暗面 / Manus / RWKV) + B站 / 抖音 / 小红书 流量驱动的 indie 创作者. 海外 indie hacker 模式 (X 流量 + Stripe + Lemon Squeezy 卖海外用户) 国内不直接复制."
+  ],
+  "research_strategy_notes": [
+    "Wave 1 collectors: github_topics 跑 'ai-agents' / 'autogen' / 'crewai' / 'langgraph' / 'lindy' tags, arxiv_collect 抽 'cs.AI agent' 论文 (但学术不是这个行业的主源), podcast_rss 跑 Latent Space / Lenny's Podcast / a16z / How AI Is Built / This Week in Startups 等. RSS 跑 a16z blog / Sequoia / Lenny newsletter / Indie Hackers blog.",
+    "黑名单严格执行: 内容农场 (Medium 没作者背书的, dev.to 转载, AI hype 营销号), Twitter 临时讲话不入 (除非作者长文 thread + retain ≥ 50 retweets + 3 月内仍可访问). YouTube 短视频 (< 15 min) 不入. 接受: 长访谈 (≥ 30 min) / 创始人 X 长 thread 截图 / VC 长报告 / 创业者博客 / Lenny's newsletter 付费版精华 / 学者长文.",
+    "声音多样性: 至少覆盖 5 个学派, 不偏 enterprise B2B SaaS (容易被 a16z hype 绑架), 也要 indie hacker / 咨询师 / 海外 SaaS / 国内 SaaS 各自视角. 同一商业策略, B2B vs indie hacker 怎么看?",
+    "诚实边界写死: 蒸 mental models + 决策框架 + 战略选择 + 工具栈, 不蒸 (a) 具体某产品的当前 traction (会过期) (b) API arbitrage / 内容农场 / spam 等灰色玩法 (c) '保证赚钱' 的承诺 — 这个行业 95% 创业者不赚钱, 蒸馏要诚实"
+  ],
+  "tested_at": "2026-05-09",
+  "purpose": "v1.5 后第 11 个 prototype — 验证大师.skill 对'量大但水分高 + 学派多且互相挑衅 + 时效极快衰减'的新兴商业行业的处理能力. 关键挑战: 信号-噪音去伪存真 + 学派覆盖均衡 + 不被 hype 绑架."
+}

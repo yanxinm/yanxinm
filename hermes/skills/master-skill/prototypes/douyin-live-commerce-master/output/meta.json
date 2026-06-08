@@ -1,0 +1,67 @@
+{
+  "name": "douyin-live-commerce-master",
+  "industry": "Douyin livestream commerce — 抖音直播带货运营 (主播运营 + 千川投放 + 选品 + 公域私域转化 + 合规)",
+  "industry_cn": "抖音直播带货 (商家 / 主播 / 直播间运营 + 千川 / 巨量引擎广告投放 + 选品 + 流量场承接 + 合规)",
+  "triggers": [
+    "抖音直播",
+    "抖音直播带货",
+    "直播带货",
+    "直播电商",
+    "直播间运营",
+    "千川",
+    "巨量千川",
+    "Qianchuan",
+    "巨量引擎",
+    "FACT 模型",
+    "FACT 矩阵",
+    "选品",
+    "话术",
+    "直播间承接",
+    "主播",
+    "中控",
+    "场控",
+    "直播切片",
+    "DOU+",
+    "小黄车",
+    "福袋",
+    "退货率",
+    "流量场",
+    "公域转化",
+    "私域回流",
+    "矩阵号",
+    "抖音 e 站",
+    "巨量百应",
+    "蝉妈妈",
+    "飞瓜数据"
+  ],
+  "locale": "zh-CN",
+  "profile": "practitioner",
+  "focus": {
+    "primary": "operational",
+    "secondary": "business"
+  },
+  "last_research_date": "2026-05-14",
+  "source_count": 109,
+  "primary_source_ratio": 0.3394,
+  "tracks_covered": [
+    "figures",
+    "tools",
+    "workflows",
+    "canon",
+    "sources",
+    "glossary"
+  ],
+  "mental_models_count": 6,
+  "playbook_rules_count": 9,
+  "research_dimensions_count": 7,
+  "sub_skills": [],
+  "generator": "master-skill v1.3",
+  "version": "1.3",
+  "changelog": [
+    {
+      "version": "1.3",
+      "date": "2026-05-14",
+      "what": "Initial generation"
+    }
+  ]
+}

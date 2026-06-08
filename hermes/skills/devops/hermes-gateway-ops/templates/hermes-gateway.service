@@ -1,0 +1,14 @@
+[Unit]
+Description=Hermes Gateway
+After=network-online.target hermes-tdai.service hermes-web-ui.service hermes-dashboard.service
+Wants=network-online.target hermes-tdai.service hermes-web-ui.service hermes-dashboard.service
+
+[Service]
+Type=simple
+User=__USER__
+ExecStart=__HOME__/.hermes/hermes-agent/venv/bin/hermes gateway run --replace
+Restart=always
+RestartSec=15
+
+[Install]
+WantedBy=multi-user.target

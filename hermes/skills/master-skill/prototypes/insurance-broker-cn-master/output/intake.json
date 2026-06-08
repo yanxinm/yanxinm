@@ -1,0 +1,34 @@
+{
+  "industry": "中国保险经纪人/代理人 (从业者视角)",
+  "industry_cn": "保险经纪人 / 保险代理人",
+  "industry_en": "China insurance brokerage / agent — practitioner perspective",
+  "industry_type": "vertical_practitioner",
+  "slug": "insurance-broker-cn",
+  "focus": "comprehensive",
+  "locale": "zh-CN",
+  "profile": "practitioner",
+  "local_materials": {
+    "mode": "none",
+    "paths": [],
+    "covered_tracks": []
+  },
+  "existing_skill": {
+    "found": false,
+    "path": null,
+    "last_research_date": null,
+    "decision": "new"
+  },
+  "triggers": [
+    "保险经纪人",
+    "保险代理人",
+    "保单方案设计",
+    "保险经纪 master",
+    "中国保险 broker",
+    "insurance broker"
+  ],
+  "warnings": [
+    "industry 不算太宽 (从业者视角 + 中国大陆 已收窄), 但保险经纪与代理人在 zh-CN 的公开材料以个人 IP / podcast 为主, 严肃学术 canon 偏少 — 预期 Track 04 候选会接近冷僻阈值; 真正的厚度在 figures (Track 01) + sources (Track 05) + workflows (Track 03 — 销售 / 转介绍 / 增员 / 理赔陪跑等流程)"
+  ],
+  "tested_at": "2026-05-04",
+  "purpose": "Q1-Q6 集成测试 — 验证新 source_verifier / quality_check 13-16 / cold_detector / Source Manifest + claim/evidence 链条在真实行业上能跑通"
+}

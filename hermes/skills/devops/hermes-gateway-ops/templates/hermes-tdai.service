@@ -1,0 +1,16 @@
+[Unit]
+Description=Hermes TDAI Memory Gateway
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=__USER__
+WorkingDirectory=__HOME__/.memory-tencentdb
+ExecStart=__HOME__/.local/bin/node --import tsx/esm node_modules/@tencentdb-agent-memory/memory-tencentdb/src/gateway/server.ts
+Restart=always
+RestartSec=10
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target

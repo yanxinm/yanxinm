@@ -1,0 +1,76 @@
+{
+  "name": "guzhu-luzhiyuan",
+  "figure_name_cn": "谷主吕志远",
+  "figure_slug": "guzhu-luzhiyuan",
+  "industry": "中国保险经纪人/代理人 (从业者视角)",
+  "industry_cn": "保险经纪人 / 保险代理人",
+  "industry_en": "China insurance brokerage / agent",
+  "parent_skill": "insurance-broker-cn-master",
+  "sub_skill_type": "person",
+  "role": "高净值经纪人 + podcast 主理人 + 行业打假者",
+  "core_oneliner": "高净值经纪人 + 行业打假者. 把监管文件 + 产品形态以 podcast 长访谈形式系统化展示, 是经纪人之间的『行业内幕共享 channel』",
+  "school": "测评驱动 + 客户教育 (监管 + 高客分支)",
+  "triggers": [
+    "谷主",
+    "吕志远",
+    "保险不保险",
+    "保险打假",
+    "高净值保险经纪",
+    "监管驱动 + 跨同业核对"
+  ],
+  "locale": "zh-CN",
+  "last_research_date": "2026-05-05",
+  "research_inputs": {
+    "primary_sources": [
+      "T01-S006",
+      "T05-S001"
+    ],
+    "secondary_references": [
+      "T03-S003",
+      "T06-S001",
+      "T06-S003",
+      "T06-S006",
+      "T01-S015",
+      "T04-S009",
+      "T04-S010",
+      "T04-S011",
+      "synthesis.md §1.1 / §1.3 / §1.4 / §1.5 / §2 / §6 / §7.1 / §8"
+    ],
+    "podcast_audio_accessed": false,
+    "podcast_transcript_available": false,
+    "podcast_episodes_metadata_available": false,
+    "podcast_episodes_metadata_path_referenced_but_empty": "/Users/sway003/master-skill/skill/prototypes/insurance-broker-cn-master/output/references/research/seeds/podcast_episodes.jsonl"
+  },
+  "mental_models_count": 5,
+  "decision_heuristics_count": 8,
+  "expression_dna_dimensions": 6,
+  "honest_boundaries_count": 6,
+  "internal_tensions_count": 3,
+  "nuwa_phase_4_self_test": {
+    "known_test": "pass — 智能核保 + 不可抗辩 + 锁定 3.0% 末班车 = 谷主流派核心打假目标, 与 master Track 06 D 节一致",
+    "edge_test": "pass — 中产 / 大众客户场景在诚实边界明示『不直接迁移』, 输出会用区间答案 + 标注局限",
+    "voice_test": "partial — 缺 podcast transcript, 语气模拟基于 master 横向引用 + podcast register 推断, 不是逐字模仿; 但同业内部黑话 + 监管引用 + 打假 motif + 长 form 偏好 4 个 fingerprint 已就位",
+    "verdict": "pass (with warnings)"
+  },
+  "warnings": [
+    "podcast audio 没下载, 仅靠 master 行业研究横向引用 + master Track 06 D 节谷主流派的反例打假, 蒸馏深度有限 — 风格层 (语气 / 节奏 / 术语) 在身份卡 + 表达 DNA + 决策启发式中合理化, 但具体引用 / 案例 / 数字未做逐字核对",
+    "podcast_episodes.jsonl seeds 文件路径在 task 输入中被引用, 但实际目录为空 — 蒸馏改用 master 行业研究的横向引用 (T01-S006 / T05-S001 / T03-S003 / T06-S001 / T06-S003 / T06-S006 + synthesis.md) 作为主信源",
+    "高净值视角主导 — 本 sub-skill 服务对象主要是高客经纪人, 不应直接搬给中产 / 大众客户场景, 已在诚实边界第 2 条明示",
+    "「打假流派」是 fingerprint 不是 mainstream — 行业里约一半同业站对立流派 (代理人体系), 已在诚实边界第 3 条明示",
+    "监管信号时效性: 90 天复查一次监管动向, 触发 update_skill 流程"
+  ],
+  "files": {
+    "skill_md": "SKILL.md",
+    "meta_json": "meta.json",
+    "distillation_notes": "references/distillation-notes.md"
+  },
+  "generator": "nuwa-skill (cross-skill composition) v1.0",
+  "version": "1.0",
+  "changelog": [
+    {
+      "version": "1.0",
+      "date": "2026-05-04",
+      "what": "Initial sub-skill distillation from insurance-broker-cn-master Phase 2 synthesis. Cross-skill composition: master industry research (6 tracks + synthesis) + nuwa-skill 4-phase distillation methodology."
+    }
+  ]
+}

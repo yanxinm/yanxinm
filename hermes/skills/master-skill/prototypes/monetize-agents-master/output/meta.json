@@ -1,0 +1,51 @@
+{
+  "name": "monetize-agents-master",
+  "industry": "Monetizing AI agents — building businesses (B2B SaaS / B2C tools / consulting / indie hacker / API arbitrage) around AI agent products and services",
+  "industry_cn": "用 AI agent 赚钱 / agent 商业化 (创业 + 副业 + 咨询 + indie hacker)",
+  "triggers": [
+    "agent business",
+    "monetize agents",
+    "AI agent SaaS",
+    "agent creator",
+    "agent indie hacker",
+    "agent automation business",
+    "用 agent 赚钱",
+    "agent 商业化",
+    "agent 创业",
+    "agent 副业",
+    "AI agent 变现",
+    "agent consulting",
+    "AI 工作流卖钱",
+    "agent freelance"
+  ],
+  "locale": "global",
+  "profile": "practitioner",
+  "focus": {
+    "primary": "operational",
+    "secondary": "business"
+  },
+  "last_research_date": "2026-05-09",
+  "source_count": 154,
+  "primary_source_ratio": 0.6104,
+  "tracks_covered": [
+    "figures",
+    "tools",
+    "workflows",
+    "canon",
+    "sources",
+    "glossary"
+  ],
+  "mental_models_count": 6,
+  "playbook_rules_count": 10,
+  "research_dimensions_count": 3,
+  "sub_skills": [],
+  "generator": "master-skill v1.3",
+  "version": "1.3",
+  "changelog": [
+    {
+      "version": "1.3",
+      "date": "2026-05-09",
+      "what": "Initial generation"
+    }
+  ]
+}

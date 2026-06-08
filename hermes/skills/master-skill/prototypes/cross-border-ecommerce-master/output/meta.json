@@ -1,0 +1,62 @@
+{
+  "name": "cross-border-ecommerce-master",
+  "industry": "cross-border e-commerce operations",
+  "industry_cn": "跨境电商运营",
+  "triggers": [
+    "跨境电商",
+    "亚马逊运营",
+    "Amazon EU",
+    "VAT",
+    "包装法",
+    "选品"
+  ],
+  "locale": "zh-CN",
+  "profile": "practitioner",
+  "focus": {
+    "primary": "Amazon EU operations",
+    "secondary": "compliance + ad strategy"
+  },
+  "last_research_date": "2026-05-02",
+  "source_count": 76,
+  "primary_source_ratio": 0.75,
+  "tracks_covered": [
+    "figures",
+    "tools",
+    "workflows",
+    "canon",
+    "sources",
+    "glossary"
+  ],
+  "mental_models_count": 5,
+  "playbook_rules_count": 9,
+  "research_dimensions_count": 5,
+  "sub_skills": [
+    {
+      "slug": "yang-meng-anker",
+      "path": "sub-skills/yang-meng-anker/SKILL.md",
+      "figure": "阳萌 (Anker)",
+      "topic": "中国品牌出海 / 长期主义"
+    },
+    {
+      "slug": "steve-chou-mwqhj",
+      "path": "sub-skills/steve-chou-mwqhj/SKILL.md",
+      "figure": "Steve Chou (MWQHJ)",
+      "topic": "独立站 / DTC / 邮件营销"
+    },
+    {
+      "slug": "bradley-sutton-helium10",
+      "path": "sub-skills/bradley-sutton-helium10/SKILL.md",
+      "figure": "Bradley Sutton (Helium 10)",
+      "topic": "Amazon 数据驱动运营"
+    }
+  ],
+  "generator": "master-skill v1.3",
+  "version": "1.3",
+  "changelog": [
+    {
+      "version": "1.3",
+      "date": "2026-05-02",
+      "what": "Initial generation"
+    }
+  ]
+}

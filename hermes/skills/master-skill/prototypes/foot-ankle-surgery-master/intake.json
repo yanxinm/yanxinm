@@ -1,0 +1,15 @@
+{
+  "industry": "foot and ankle surgery",
+  "industry_cn": "足踝外科",
+  "slug": "foot-ankle-surgery",
+  "locale": "zh-CN",
+  "profile": "practitioner",
+  "focus": {"primary": "成人足踝慢性病变 + 运动损伤", "secondary": "保守 vs 手术决策 + 强监管医疗领域"},
+  "triggers": ["足踝", "扭伤", "足底筋膜炎", "拇外翻", "踝关节", "韧带", "跟腱", "足踝外科", "平足", "高弓足", "踝关节置换"],
+  "source_count": 130,
+  "primary_source_ratio": 0.78,
+  "tracks_covered": ["figures", "tools", "workflows", "canon", "sources", "glossary"],
+  "mental_models_count": 5,
+  "playbook_rules_count": 9,
+  "research_dimensions_count": 5
+}
