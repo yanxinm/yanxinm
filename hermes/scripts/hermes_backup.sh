@@ -10,11 +10,8 @@ BACKUP_DIR="$REPO_DIR/hermes"
 DATE_TAG=$(date +%Y%m%d%H%M)
 
 cd "$REPO_DIR"
-# 确保使用 SSH remote（HTTPS 在墙内可能被阻断）
-CURRENT_REMOTE=$(git remote get-url origin 2>/dev/null || echo "")
-if echo "$CURRENT_REMOTE" | grep -q "^https"; then
-  git remote set-url origin "git@github.com:yanxinm/yanxinm.git"
-fi
+# 保持 HTTPS（通过 ghproxy.net 代理），不切 SSH
+# SSH 在墙内经常不通，HTTPS + ghproxy 更可靠
 
 # 清理上次备份
 rm -rf "$BACKUP_DIR"
@@ -53,7 +50,8 @@ cp "$HOME/gbrain/CLAUDE.md" "$BACKUP_DIR/gbrain/" 2>/dev/null || true
 mkdir -p "$BACKUP_DIR/config"
 cp "$HERMES_HOME/.hermes_history" "$BACKUP_DIR/config/" 2>/dev/null || true
 
-# 9. Git 提交
+# 9. Git 提交（本地）+ 推送到远程（最佳努力）
+echo "hermes/skills/guizang-ppt-skill/" > "$REPO_DIR/.gitignore" 2>/dev/null || true
 git add -A
 if git diff --cached --quiet; then
     echo "hermes-backup: $DATE_TAG OK (no changes)"
@@ -62,14 +60,17 @@ fi
 
 git commit -m "hb: $DATE_TAG" --quiet
 
+# 尝试推送到 GitHub（网络可能不通，不阻塞）
 PUSH_OUT=$(git push origin main 2>&1) && PUSH_EXIT=0 || PUSH_EXIT=$?
 
 if [ "$PUSH_EXIT" -ne 0 ]; then
-    # 过滤掉 GitHub 的远程提示行，保留关键错误
-    ERROR_MSG=$(echo "$PUSH_OUT" | grep -v "^remote:" | grep -v "^$" | head -5)
-    echo "hermes-backup: $DATE_TAG ERROR — push 失败"
+    ERROR_MSG=$(echo "$PUSH_OUT" | grep -v "^remote:" | grep -v "^$" | head -3)
+    echo "hermes-backup: $DATE_TAG WARNING — push 失败（已本地保存）"
     echo "hermes-backup: $ERROR_MSG"
-    exit 1
+    # 本地 tar 兜底
+    tar -czf "$REPO_DIR/hermes-backup-$DATE_TAG.tar.gz" -C "$REPO_DIR" hermes/ 2>/dev/null
+    echo "hermes-backup: 本地备份已存至 $REPO_DIR/hermes-backup-$DATE_TAG.tar.gz"
+    exit 0
 fi
 
 echo "hermes-backup: $DATE_TAG OK ($(du -sh $BACKUP_DIR | cut -f1))"

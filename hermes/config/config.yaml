@@ -416,17 +416,18 @@ approvals:
   mcp_reload_confirm: true
   destructive_slash_confirm: true
 command_allowlist:
-- shell command via -c/-lc flag
-- pipe remote content to shell
-- script execution via -e/-c flag
-- hermes update (restarts gateway, kills running agents)
-- recursive delete
 - delete in root path
 - stop/restart system service
+- pipe remote content to shell
+- git reset --hard (destroys uncommitted changes)
+- script execution via -e/-c flag
+- recursive delete
+- shell command via -c/-lc flag
 - overwrite project env/config via redirection
-- script execution via heredoc
+- hermes update (restarts gateway, kills running agents)
 - stop/restart hermes gateway (kills running agents)
 - overwrite system file via redirection
+- script execution via heredoc
 quick_commands: {}
 hooks: {}
 hooks_auto_accept: false
@@ -527,6 +528,7 @@ secrets:
 paste_collapse_threshold: 5
 paste_collapse_threshold_fallback: 5
 paste_collapse_char_threshold: 2000
+_config_version: 28
 custom_providers:
 - api_key: ark-fe29f5ba-4906-4294-9393-1f8665d33d8b-0ca44
   base_url: https://ark.cn-beijing.volces.com/api/v3
