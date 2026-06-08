@@ -50,27 +50,21 @@ cp "$HOME/gbrain/CLAUDE.md" "$BACKUP_DIR/gbrain/" 2>/dev/null || true
 mkdir -p "$BACKUP_DIR/config"
 cp "$HERMES_HOME/.hermes_history" "$BACKUP_DIR/config/" 2>/dev/null || true
 
-# 9. Git 提交（本地）+ 推送到远程（最佳努力）
+# 9. 本地备份保存（不依赖网络）
+# 当 GitHub 不可达时，纯本地 tar 兜底
+LOCAL_TAR="$REPO_DIR/hermes-backup-$DATE_TAG.tar.gz"
+tar -czf "$LOCAL_TAR" -C "$REPO_DIR" hermes/ 2>/dev/null
+
+# 尝试 git 推送（最佳努力）
 echo "hermes/skills/guizang-ppt-skill/" > "$REPO_DIR/.gitignore" 2>/dev/null || true
-git add -A
-if git diff --cached --quiet; then
-    echo "hermes-backup: $DATE_TAG OK (no changes)"
-    exit 0
+git add -A 2>/dev/null
+if ! git diff --cached --quiet 2>/dev/null; then
+    git commit -m "hb: $DATE_TAG" --quiet 2>/dev/null || true
+    PUSH_OUT=$(git push origin main 2>&1) && PUSH_EXIT=0 || PUSH_EXIT=$?
+    if [ "$PUSH_EXIT" -eq 0 ]; then
+        echo "hermes-backup: $DATE_TAG OK — GitHub 已同步 ($(du -sh $BACKUP_DIR | cut -f1))"
+        exit 0
+    fi
 fi
 
-git commit -m "hb: $DATE_TAG" --quiet
-
-# 尝试推送到 GitHub（网络可能不通，不阻塞）
-PUSH_OUT=$(git push origin main 2>&1) && PUSH_EXIT=0 || PUSH_EXIT=$?
-
-if [ "$PUSH_EXIT" -ne 0 ]; then
-    ERROR_MSG=$(echo "$PUSH_OUT" | grep -v "^remote:" | grep -v "^$" | head -3)
-    echo "hermes-backup: $DATE_TAG WARNING — push 失败（已本地保存）"
-    echo "hermes-backup: $ERROR_MSG"
-    # 本地 tar 兜底
-    tar -czf "$REPO_DIR/hermes-backup-$DATE_TAG.tar.gz" -C "$REPO_DIR" hermes/ 2>/dev/null
-    echo "hermes-backup: 本地备份已存至 $REPO_DIR/hermes-backup-$DATE_TAG.tar.gz"
-    exit 0
-fi
-
-echo "hermes-backup: $DATE_TAG OK ($(du -sh $BACKUP_DIR | cut -f1))"
+echo "hermes-backup: $DATE_TAG OK — 本地备份 ($(du -sh "$LOCAL_TAR" | cut -f1))"
