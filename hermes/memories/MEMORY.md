@@ -6,7 +6,7 @@
 §
 AIGC视觉路线：gpt-image-2/1.5有名人肖像保护→去真名用纯面部特征绕过。Seedream图生图有抠图效应。SDXL LoRA：阿里云PAI A10实例，rank=128 2000步 Loss 0.0392，已解决NaN(fp16+fp32混合精度)。冰箱贴v2珐琅徽章质感图标(gpt-image-2~60s)，DancingScript 38px "地名|月份全称,年份"。老缪偏好全GPT路线、自然场景渲染、小红书/ins旅行打卡风。
 §
-Tailscale+Desktop：基地(100.86.13.11)↔Ethan(Win11,100.86.148.56)同账号。Funnel→8648(Web UI)/9119(Desktop Dashboard)。Ethan Hermes Desktop C:\Users\yanxi\AppData\Local\hermes\，远程后端用Token认证连基地9119。国内镜像：npm→npmmirror,git→ghproxy.net。Hermes v0.16.0。API Server 0.0.0.0:8642。
+基地M710q: Ubuntu22.04 GNOME,Tailscale 100.86.13.11。Funnel:443=/→HA:8123,443=/dash→Dashboard:9119。Docker 29.1.3(sg docker),HA /home/miao/docker/ha/ network_mode=host。HA反向代理信任(http:use_x_forwarded_for,trusted_proxies:127.0.0.1)。root文件用docker exec写入。HACS v2.0.5。五平台:小米(官方)/追觅(HACS)/美的(HACS)/晶御(官方)/海尔(HACS)。华为AGS-Q10放弃。Hermes v0.16。
 §
 html-video (nexu-io) 已部署在基地 /home/miao/html-video/，22 模板，Hyperframes 引擎，Hermes Agent 驱动。Studio 端口 3071（已 patch 为 0.0.0.0），通过 Tailscale http://100.86.13.11:3071 远程访问。启动命令：export PATH="/home/miao/.hermes/node/bin:$PATH" && cd /home/miao/html-video && node packages/cli/dist/bin.js studio --port 3071。pnpm 在 /home/miao/.hermes/node/bin/pnpm。
 §

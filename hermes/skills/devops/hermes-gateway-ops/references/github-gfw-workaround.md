@@ -103,3 +103,12 @@ git clone https://ghproxy.net/https://github.com/<owner>/<repo>.git
 - tarball 下载走 api.github.com，与 git clone 走不同域名
 - 下载速度可能很慢（100KB/s 以下），大仓库需要 1-2 分钟
 - tarball 不包含 .git 目录，无法做 git 操作
+
+## Git Push 特别说明（2026-06-08 实测）
+
+即使 `ghproxy.net` 的 HTTPS 代理对网页和 API 返回 200 OK，**git push 仍可能失败**：
+- `git push` 使用 git smart HTTP 协议（`git-upload-pack`），与普通 HTTPS GET 走不同路径
+- 即使 `insteadOf` 代理生效，fetch-pack 在传输数据包时会 `unexpected disconnect`
+- SSH 端口 443（`ssh.github.com:443`）同样被 DPI 阻断
+
+**灾备脚本应对：** 见 §十二 每日灾备——网络不通时自动退化为本地 tar 备份，不阻塞 cron。有网时 git push 自动恢复。

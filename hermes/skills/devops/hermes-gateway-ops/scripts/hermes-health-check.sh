@@ -162,37 +162,86 @@ check_tdai() {
     fi
 }
 
-# ---- 5. 微信 & 飞书平台连接 ----
+# ---- 5. 微信 & 飞书平台连接（v3：时间窗口+消息印证+进程推断）----
 check_platforms() {
-    if [ -f "$GATEWAY_LOG" ]; then
-        local last_weixin
-        local last_feishu
-        last_weixin=$(grep -E '\[Weixin\] Connected|\[Weixin\] Disconnected|weixin.*error' "$GATEWAY_LOG" | tail -1)
-        last_feishu=$(grep -E '\[Feishu\] Connected|\[Feishu\] Disconnected|feishu.*error' "$GATEWAY_LOG" | tail -1)
-
-        if echo "$last_weixin" | grep -q "Connected"; then
-            result "$PASS 微信 (Weixin) — 已连接"
-        elif echo "$last_weixin" | grep -q "Disconnected"; then
-            result "$FAIL 微信 (Weixin) — 已断开"
-            fail_count=$((fail_count + 1))
-        else
-            result "$WARN 微信 (Weixin) — 状态未知（无日志）"
-            fail_count=$((fail_count + 1))
-        fi
-
-        if echo "$last_feishu" | grep -q "Connected"; then
-            result "$PASS 飞书 (Feishu) — 已连接"
-        elif echo "$last_feishu" | grep -q "Disconnected"; then
-            result "$FAIL 飞书 (Feishu) — 已断开"
-            fail_count=$((fail_count + 1))
-        else
-            result "$WARN 飞书 (Feishu) — 状态未知（无日志）"
-            fail_count=$((fail_count + 1))
-        fi
-    else
+    if [ ! -f "$GATEWAY_LOG" ]; then
         result "$WARN 平台 — 无法读取 gateway 日志"
         fail_count=$((fail_count + 1))
+        return
     fi
+
+    local now_epoch cutoff_epoch
+    now_epoch=$(date +%s)
+    cutoff_epoch=$((now_epoch - 1800))  # 30分钟窗口
+
+    # 辅助：日志行是否在时间窗口内
+    log_line_in_window() {
+        local line="$1"
+        local ts
+        ts=$(echo "$line" | sed -n 's/^\([0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\} [0-9]\{2\}:[0-9]\{2\}:[0-9]\{2\}\).*/\1/p')
+        if [ -z "$ts" ]; then return 1; fi
+        local line_epoch
+        line_epoch=$(date -d "$ts" +%s 2>/dev/null || echo 0)
+        [ "$line_epoch" -ge "$cutoff_epoch" ]
+    }
+
+    check_one_platform() {
+        local tag="$1" name="$2"
+        local connected disconnected recent_conn recent_disc recent_msg
+
+        connected=$(grep -E "\[$tag\] Connected" "$GATEWAY_LOG" 2>/dev/null | tail -1)
+        disconnected=$(grep -E "\[$tag\] Disconnected" "$GATEWAY_LOG" 2>/dev/null | tail -1)
+
+        recent_conn=$(grep -E "\[$tag\] Connected" "$GATEWAY_LOG" 2>/dev/null | tail -1)
+        [ -n "$recent_conn" ] && ! log_line_in_window "$recent_conn" && recent_conn=""
+        recent_disc=$(grep -E "\[$tag\] Disconnected" "$GATEWAY_LOG" 2>/dev/null | tail -1)
+        [ -n "$recent_disc" ] && ! log_line_in_window "$recent_disc" && recent_disc=""
+
+        recent_msg=$(grep -E "\[$tag\] (inbound|Sending response)" "$GATEWAY_LOG" 2>/dev/null | tail -1)
+        [ -n "$recent_msg" ] && ! log_line_in_window "$recent_msg" && recent_msg=""
+
+        # a. 30分钟内 Connected → ✅
+        if [ -n "$recent_conn" ] && [ -z "$recent_disc" ]; then
+            result "$PASS $name ($tag) — 已连接（最近确认）"; return
+        fi
+        # b. 30分钟内 Disconnected → ❌
+        if [ -n "$recent_disc" ]; then
+            result "$FAIL $name ($tag) — 最近断开"; fail_count=$((fail_count + 1)); return
+        fi
+        # c. 30分钟内有消息 → ✅
+        if [ -n "$recent_msg" ]; then
+            result "$PASS $name ($tag) — 活跃中（有消息往来）"; return
+        fi
+        # d. 历史 Connected + Gateway 正常 → ✅
+        if [ -n "$connected" ] && [ -z "$disconnected" ]; then
+            result "$PASS $name ($tag) — 已连接（历史确认，Gateway正常）"; return
+        fi
+        # e. Connected vs Disconnected 时间戳比较
+        if [ -n "$connected" ] && [ -n "$disconnected" ]; then
+            local conn_ts disc_ts
+            conn_ts=$(echo "$connected" | sed -n 's/^\([0-9-]* [0-9:]*\).*/\1/p')
+            disc_ts=$(echo "$disconnected" | sed -n 's/^\([0-9-]* [0-9:]*\).*/\1/p')
+            if [ -n "$conn_ts" ] && [ -n "$disc_ts" ] && [[ "$conn_ts" > "$disc_ts" ]]; then
+                result "$PASS $name ($tag) — 已连接（已恢复）"; return
+            elif echo "$disconnected" | grep -q "Disconnected" && [ -z "$recent_msg" ]; then
+                result "$FAIL $name ($tag) — 已断开，无恢复迹象"; fail_count=$((fail_count + 1)); return
+            fi
+        fi
+        # f. Gateway 稳定但无日志 → ⚠️ 轻度警告
+        if is_gateway_running; then
+            local gw_pid gw_uptime
+            gw_pid=$(find_gateway_pid)
+            gw_uptime=$(ps -o etime= -p "$gw_pid" 2>/dev/null | tr -d ' ')
+            if echo "$gw_uptime" | grep -qE ':[0-9]{2}|[0-9]+-'; then
+                result "$WARN $name ($tag) — 状态未知，但Gateway稳定运行中"; return
+            fi
+        fi
+        # g. 彻底未知
+        result "$WARN $name ($tag) — 状态未知（无日志）"
+    }
+
+    check_one_platform "Weixin" "微信"
+    check_one_platform "Feishu" "飞书"
 }
 
 # ====== Main ======

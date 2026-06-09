@@ -27,9 +27,10 @@ M710q Ubuntu 基地（`miao-thinkcentre-m710q-n080`）的远程访问、网络�
 
 **新版 Funnel 语法**（v1.80+，`tailscale funnel <target>` 替代旧的 `funnel on`）：
 ```bash
-sudo tailscale funnel --bg 9119             # 启动（端口直连 Python Dashboard，避免 Node SPA 代理丢 auth header）
+sudo tailscale funnel --bg 9119             # 主 Funnel：Hermes Dashboard（443→9119）
+sudo tailscale funnel --bg --https=8443 http://localhost:8123  # HA 面板（公网 8443→本地 8123）
 tailscale serve status                       # 查看 serve/funnel 状态
-sudo tailscale funnel --https=443 off        # 关闭
+sudo tailscale funnel --https=8443 off       # 关闭
 ```
 
 **旧版语法（已废弃，但 `tailscale serve status` 仍显示 `Funnel on/off`）：**
@@ -167,12 +168,14 @@ git config --global url."https://ghproxy.net/https://github.com/".insteadOf "htt
 
 | 端口 | 服务 | 绑定 | 说明 |
 |------|------|------|------|
+| 8123 | Home Assistant | 0.0.0.0 | 智能家居控制面板 |
 | 8648 | Hermes Web UI / Studio (Node SPA) | 0.0.0.0 | Vue 版完整聊天界面，但不能用于 Desktop 远程后端 |
 | 9119 | Hermes Dashboard (Python) | 0.0.0.0 | API 服务 + 基础 Web UI，Desktop 远程后端口。`--insecure --host 0.0.0.0` |
 | 8642 | Hermes Gateway API | 127.0.0.1 | 仅本地 |
 | 8420 | Gateway 内部 | 127.0.0.1 | 仅本地 |
 | 3071 | html-video Studio | 0.0.0.0 | 需先 patch 绑定地址 |
 | 22 | SSH | 0.0.0.0 | 远程管理 |
+| 1883 | Mosquitto MQTT (预留) | — | 未来可选 |
 
 ---
 
@@ -185,7 +188,122 @@ export PATH="/home/miao/.hermes/node/bin:$PATH"
 
 ---
 
-## 六、html-video 项目
+## 六、Docker 安装（国内环境）
+
+### 优先使用 Ubuntu 官方源
+
+Docker 官方源 `download.docker.com` 在国内经常被墙，**Ubuntu 22.04 官方仓库自带 docker.io**，直接用：
+
+```bash
+sudo apt-get install -y docker.io docker-compose-v2
+# 版本：docker.io 29.1.x, compose v2.40.x — 完全够用
+sudo usermod -aG docker $USER
+sudo systemctl enable docker --now
+# 新 shell 验证: docker version
+```
+
+⚠️ 不要折腾清华/阿里 Docker CE 源——GPG key 下载和 sudo 密码交互在 Hermes terminal 工具里容易连环失败。Ubuntu 官方 `docker.io` 包一行搞定。
+
+### 无需 sudo 运行 Docker
+
+```bash
+# 加组后需新 shell 生效；Hermes terminal 里用 sg 临时切组：
+sg docker -c "docker ps"
+sg docker -c "docker compose up -d"
+sg docker -c "docker compose -f /home/miao/docker/ha/docker-compose.yml pull"
+sg docker -c "docker restart homeassistant"
+```
+
+⚠️ `sg docker -c "..."` 是 Hermes terminal 工具的关键技巧：每行 terminal 调用是独立 shell，`newgrp` 无效，`sg` 是正确姿势。不加 `sg` 会导致 `permission denied while trying to connect to the docker API`。
+
+## 七、Home Assistant Docker 部署
+
+### docker-compose.yml（network_mode: host）
+
+```yaml
+services:
+  homeassistant:
+    container_name: homeassistant
+    image: ghcr.io/home-assistant/home-assistant:stable
+    network_mode: host        # 必须 host 模式 — mDNS/UPnP 发现设备
+    restart: unless-stopped
+    volumes:
+      - /home/miao/docker/ha/config:/config
+      - /etc/localtime:/etc/localtime:ro
+      - /run/dbus:/run/dbus:ro
+    environment:
+      - TZ=Asia/Shanghai
+```
+
+⚠️ `network_mode: host` 时不要配 `ports`（会报错）。HA 直接监听宿主机 8123。
+
+### 部署命令
+
+```bash
+mkdir -p /home/miao/docker/ha
+# 写入上述 compose 文件
+sg docker -c "docker compose -f /home/miao/docker/ha/docker-compose.yml pull"
+sg docker -c "docker compose -f /home/miao/docker/ha/docker-compose.yml up -d"
+```
+
+⚠️ 镜像 ~380MB，ghcr.io 拉取可能很慢（5-10分钟），属正常。
+
+### HACS 手动安装
+
+官方 `wget -O - https://get.hacs.xyz | bash -` 脚本在 Docker 环境下可能找不到 HA 目录。手动安装：
+
+```bash
+HACS_VERSION=$(curl -s https://api.github.com/repos/hacs/integration/releases/latest | grep '"tag_name"' | head -1 | sed 's/.*"tag_name": "\(.*\)".*/\1/')
+wget -q "https://github.com/hacs/integration/releases/download/${HACS_VERSION}/hacs.zip" -O /tmp/hacs.zip
+sudo mkdir -p /home/miao/docker/ha/config/custom_components/hacs
+sudo unzip -qo /tmp/hacs.zip -d /home/miao/docker/ha/config/custom_components/hacs
+sg docker -c "docker restart homeassistant"
+# 之后在 HA Web UI 中：设置 → 设备与服务 → 添加集成 → 搜 HACS → 安装
+```
+
+⚠️ Docker 创建的 `/config` 目录属主是 root，所以需要 `sudo`。
+
+### HA 反向代理信任配置（Funnel 必配）
+
+HA 在 Tailscale Funnel 后面时，需要信任来自 127.0.0.1 的反向代理请求，否则返回 400：
+
+```yaml
+# 添加到 /config/configuration.yaml
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 127.0.0.1
+```
+
+### 写入 root 属主配置文件
+
+当 `sudo` 密码不可用（Hermes terminal 工具 sudo 交互不稳定）时，用 `docker exec` 在容器内写入：
+
+```bash
+# 追加配置到 HA 的 configuration.yaml
+sg docker -c "docker exec homeassistant sh -c 'cat >> /config/configuration.yaml' << 'EOF'
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 127.0.0.1
+EOF"
+sg docker -c "docker restart homeassistant"
+```
+
+### 防火墙 — ufw 放行 8123
+
+HA 在 `network_mode: host` 下监听 0.0.0.0:8123，但 ufw 默认 DROP INPUT。**Tailscale ping 通但 TCP 不通时，优先检查 ufw**：
+
+```bash
+sudo ufw allow 8123/tcp comment 'Home Assistant'
+sudo ufw status | grep 8123   # 确认
+```
+
+### 中国智能家居平台接入参考
+
+见 [`references/smart-home-platforms-china.md`](references/smart-home-platforms-china.md) — 六大平台（小米/追觅/美的/晶御/海尔/华为）HA 集成方案与可靠性评估。
+
+## 八、html-video 项目
 
 ### 启动 Studio
 
@@ -204,7 +322,7 @@ cd /home/miao/html-video && \
 
 ---
 
-## 七、Hermes Profiles 管理
+## 九、Hermes Profiles 管理
 
 ### 创建 Profile 时 `--clone` 失败
 
@@ -234,7 +352,7 @@ hermes profile show <name>       # 查看详情
 
 ---
 
-## 八、Windows Desktop 安装（国内环境）
+## 十、Windows Desktop 安装（国内环境）
 
 在笔记本（Windows）上安装 Hermes Desktop 时遇到的坑和解决方案。
 
@@ -279,7 +397,7 @@ git config --global --list | findstr ghproxy
 
 ---
 
-## 九、第三方 Skill 安装
+## 十一、第三方 Skill 安装
 
 Hermes 会自动发现 `~/.hermes/skills/<name>/` 下任何包含 `SKILL.md` 的目录，无需手动注册。
 

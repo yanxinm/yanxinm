@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  homeassistant:
+    container_name: homeassistant
+    image: ghcr.io/home-assistant/home-assistant:stable
+    volumes:
+      - ./ha-config:/config
+      - /etc/localtime:/etc/localtime:ro
+      - /run/dbus:/run/dbus:ro
+    restart: unless-stopped
+    privileged: true
+    network_mode: host
+    environment:
+      - TZ=Asia/Shanghai
+
+  # 可选：Mosquitto MQTT broker（如果 Zigbee2MQTT 或其他需要）
+  mosquitto:
+    container_name: mosquitto
+    image: eclipse-mosquitto:latest
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    restart: unless-stopped
+    network_mode: host
+    # 初次启动后需手动配置 mosquitto/config/mosquitto.conf
+
+  # 可选：Node-RED（复杂自动化编排）
+  # node-red:
+  #   container_name: node-red
+  #   image: nodered/node-red:latest
+  #   volumes:
+  #     - ./node-red:/data
+  #   restart: unless-stopped
+  #   network_mode: host
+  #   environment:
+  #     - TZ=Asia/Shanghai

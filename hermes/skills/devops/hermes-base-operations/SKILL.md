@@ -175,7 +175,48 @@ done
 
 ---
 
-## 五、服务管理速查
+## 六、Home Assistant 集成
+
+Hermes Agent 原生支持 Home Assistant，通过 `HASS_TOKEN` 激活。
+
+### 配置
+
+```bash
+# 1. 在 HA Web UI 创建长期访问令牌
+#    个人资料 → 长期访问令牌 → 创建（名称：Hermes Agent）
+
+# 2. 写入 ~/.hermes/.env
+echo "HASS_TOKEN=<令牌>" >> ~/.hermes/.env
+echo "HASS_URL=http://127.0.0.1:8123" >> ~/.hermes/.env  # 可选，基地本地
+
+# 3. 重启 Gateway 生效
+hermes gateway restart
+```
+
+### 可用工具（配置后自动启用）
+
+| 工具 | 功能 | 示例 |
+|------|------|------|
+| `ha_get_state` | 获取实体状态和属性 | 查温度、开关状态 |
+| `ha_call_service` | 控制设备 | 开灯、调温、启动扫地机 |
+| `ha_list_entities` | 列出实体（可按 domain/area 过滤） | 列出所有灯、客厅设备 |
+| `ha_list_services` | 列出可用服务 | 查看空调支持的操作 |
+
+另有 WebSocket 实时订阅状态变更。
+
+### 部署要点
+
+- HA 用 Docker `network_mode: host` → HASS_URL 用 `http://127.0.0.1:8123`
+- ufw 需放行 8123（Tailscale 远程访问）
+- HACS 手动安装到 `/home/miao/docker/ha/config/custom_components/hacs/`
+- **HA 在 Funnel 后面需要反向代理信任配置**（`http: use_x_forwarded_for: true, trusted_proxies: - 127.0.0.1`），否则返回 400
+- **Funnel 子路径陷阱**：HA 不认子路径（如 `/ha`），需让 HA 占 Funnel 根路径 `/`，Hermes Dashboard 挪到 `/dash`。用 `tailscale funnel --bg --https=443 --set-path=/ <target>` 配置
+
+详见 [`base-machine-ops`](../devops/base-machine-ops/SKILL.md) §七。
+
+---
+
+## 七、服务管理速查
 
 ```bash
 # Dashboard

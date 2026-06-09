@@ -1,6 +1,7 @@
 model:
   default: deepseek-v4-pro
   provider: deepseek
+  base_url: https://api.deepseek.com/v1
 providers: {}
 fallback_providers: []
 credential_pool_strategies: {}
@@ -410,24 +411,26 @@ matrix:
   free_response_rooms: ''
   allowed_rooms: ''
 approvals:
-  mode: manual
+  mode: smart
   timeout: 60
   cron_mode: deny
   mcp_reload_confirm: true
   destructive_slash_confirm: true
 command_allowlist:
+- stop/restart hermes gateway (kills running agents)
+- overwrite system file via tee
+- git reset --hard (destroys uncommitted changes)
+- recursive delete
+- overwrite system file via redirection
+- hermes update (restarts gateway, kills running agents)
 - delete in root path
+- sudo with combined-flag privilege escalation
+- overwrite project env/config via redirection
+- script execution via -e/-c flag
+- script execution via heredoc
 - stop/restart system service
 - pipe remote content to shell
-- git reset --hard (destroys uncommitted changes)
-- script execution via -e/-c flag
-- recursive delete
 - shell command via -c/-lc flag
-- overwrite project env/config via redirection
-- hermes update (restarts gateway, kills running agents)
-- stop/restart hermes gateway (kills running agents)
-- overwrite system file via redirection
-- script execution via heredoc
 quick_commands: {}
 hooks: {}
 hooks_auto_accept: false
@@ -577,6 +580,28 @@ mcp_servers:
       HERMES_WEBUI_STATE_DIR: /home/miao/.hermes-web-ui
       HERMES_WEB_UI_MANAGED_MCP: '1'
     enabled: true
+platform_toolsets:
+  cli:
+  - browser
+  - clarify
+  - code_execution
+  - computer_use
+  - cronjob
+  - delegation
+  - file
+  - image_gen
+  - memory
+  - messaging
+  - session_search
+  - skills
+  - terminal
+  - todo
+  - tts
+  - vision
+  - web
+known_plugin_toolsets:
+  cli:
+  - spotify
 
 # ── Fallback Model ────────────────────────────────────────────────────
 # Automatic provider failover when primary is unavailable.

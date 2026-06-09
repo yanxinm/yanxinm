@@ -179,7 +179,7 @@
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-06-06T16:17:51.326526+08:00",
-      "next_run_at": "2026-06-09T08:10:00+08:00",
+      "next_run_at": "2026-06-10T08:10:00+08:00",
       "last_run_at": "2026-06-08T08:10:47.491360+08:00",
       "last_status": "error",
       "last_error": "Script exited with code 1\nstderr:\n/home/miao/.hermes/scripts/hermes_backup.sh: \u7b2c 11 \u884c\uff1a cd: /home/miao/yanxinm: \u6ca1\u6709\u90a3\u4e2a\u6587\u4ef6\u6216\u76ee\u5f55",
@@ -288,15 +288,15 @@
       "schedule_display": "every 2m",
       "repeat": {
         "times": null,
-        "completed": 1083
+        "completed": 1275
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-06-06T16:17:53.039117+08:00",
-      "next_run_at": "2026-06-08T22:35:39.238645+08:00",
-      "last_run_at": "2026-06-08T22:33:39.238645+08:00",
+      "next_run_at": "2026-06-09T08:11:47.110198+08:00",
+      "last_run_at": "2026-06-09T08:09:47.110198+08:00",
       "last_status": "ok",
       "last_error": null,
       "last_delivery_error": null,
@@ -326,18 +326,18 @@
       "schedule_display": "0 0,6,12,18 * * *",
       "repeat": {
         "times": null,
-        "completed": 9
+        "completed": 11
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-06-06T16:17:53.601004+08:00",
-      "next_run_at": "2026-06-09T00:00:00+08:00",
-      "last_run_at": "2026-06-08T18:01:16.561165+08:00",
+      "next_run_at": "2026-06-09T12:00:00+08:00",
+      "last_run_at": "2026-06-09T06:00:46.130853+08:00",
       "last_status": "ok",
       "last_error": null,
-      "last_delivery_error": "delivery error: Weixin send failed: iLink sendmessage rate limited: ret=-2 errcode=None errmsg=rate limited",
+      "last_delivery_error": null,
       "deliver": "all",
       "origin": null,
       "enabled_toolsets": null,
@@ -505,5 +505,5 @@
       "profile": "wenan"
     }
   ],
-  "updated_at": "2026-06-08T22:33:39.238811+08:00"
+  "updated_at": "2026-06-09T08:10:47.056757+08:00"
 }
