@@ -1,12 +1,10 @@
-老缪写作风格技能已创建（laomiao-writing-style），写四类稿件前加载：月度工作报告、意识形态报告、策划方案、请示报告。排版规范：主标题方正小标宋22pt，正文仿宋_GB2312 16pt首行缩进2字符固定28磅行距。技能含4份参考分析+3份可复用模板。
+文档管线：笔记本 Ethan(100.86.148.56) E:\百度云同步盘\工作台账\ → 基地 ~/工作台账/（3726份2.49GB不含PPT）。周末SSH+rsync同步（Tailscale DERP中继TCP双向不通，需直连）。脚本：sync_taizhang.sh + weekly_scan.py。笔记本已装OpenSSH Server、免密密钥待配。
 §
-用户原则（6条）：1.隐私保护 — 不向外传密钥/密码/身份证。2.事实核查 — 全网搜索不编创，材料必须真实可验证。3.文件操作仅限 /mnt/e/百度云同步盘/工作台账/ 目录。4.我是自主执行者和思考伙伴，不等命令，主动找机会、推动事情。5.正确时大胆反对，拿出证据。6.用户长期未推的工作可主动提醒，材料不好用主动改进。用户明确表示后续有新原则会主动告知。
+用户原则（6条）：1.隐私保护。2.事实核查—全网搜索不编创。3.文件操作限工作台账目录（基地本地副本 /home/miao/工作台账/，源在笔记本 E:\百度云同步盘\工作台账\）。4.自主执行者+思考伙伴，不等命令。5.正确时大胆反对，拿出证据。6.主动提醒长期未推的工作、主动改进不好用的材料。
 §
 用户明确要求：长时间运行的任务必须定期主动汇报进度，任务完成后必须主动输出验证结果，不能等用户来问。安静不报=失职。
 §
-AIGC视觉路线：gpt-image-2/1.5有名人肖像保护→去真名用纯面部特征绕过。Seedream图生图有抠图效应。SDXL LoRA：阿里云PAI A10实例，rank=128 2000步 Loss 0.0392，已解决NaN(fp16+fp32混合精度)。冰箱贴v2珐琅徽章质感图标(gpt-image-2~60s)，DancingScript 38px "地名|月份全称,年份"。老缪偏好全GPT路线、自然场景渲染、小红书/ins旅行打卡风。
-§
-基地M710q: Ubuntu22.04 GNOME,Tailscale 100.86.13.11。Funnel:443=/→HA:8123,443=/dash→Dashboard:9119。Docker 29.1.3(sg docker),HA /home/miao/docker/ha/ network_mode=host。HA反向代理信任(http:use_x_forwarded_for,trusted_proxies:127.0.0.1)。root文件用docker exec写入。HACS v2.0.5。五平台:小米(官方)/追觅(HACS)/美的(HACS)/晶御(官方)/海尔(HACS)。华为AGS-Q10放弃。Hermes v0.16。
+基地M710q: Ubuntu22.04 GNOME/Docker/Tailscale 100.86.13.11，家里局域网IP常见为192.168.1.42。Hermes Desktop/Dashboard 走 9119，Tailscale Funnel 根路径 `/` 必须只给 Hermes；HomeAssistant 必须另走 `/ha` 或独立入口，不要混。Desktop 网页能开但提示词发不出时，优先查 Dashboard session token/客户端缓存和 `/api/ws` WebSocket；单位网络可能拦 WebSocket/Tailscale，家里可用 `http://192.168.1.42:9119` 直连验证。apikey-fun gpt-5.5 CLI 已验证可用。
 §
 html-video (nexu-io) 已部署在基地 /home/miao/html-video/，22 模板，Hyperframes 引擎，Hermes Agent 驱动。Studio 端口 3071（已 patch 为 0.0.0.0），通过 Tailscale http://100.86.13.11:3071 远程访问。启动命令：export PATH="/home/miao/.hermes/node/bin:$PATH" && cd /home/miao/html-video && node packages/cli/dist/bin.js studio --port 3071。pnpm 在 /home/miao/.hermes/node/bin/pnpm。
 §
@@ -17,3 +15,5 @@ Kanban已初始化。Cron：台账扫描每周一9:00(wenan)、月度报告提�
 贵州自驾v4(2026.06.08定):7.18-25一家三口南京⇌贵阳。环线:贵阳→安顺→黄果树(西门三核心)→织金洞→乌蒙草原→遵义→茅台→赤水(2晚深度)→贵阳。Day4最长3.5h。~1350km,人均3100-5000元。预约:黄果树7.19西门/织金洞7.20/遵义会址7.21。偏好:1大床+1双床≥1.35m,新酒店优先,不推狗肉,先紧后松。HTML:/home/miao/贵州自驾游-v4.html
 §
 搜索默认用 AnySearch（~/.hermes/skills/anysearch/，v2.1.0）。CLI：python3 ~/.hermes/skills/anysearch/scripts/anysearch_cli.py search "query" -m N。支持 search/batch_search/extract/get_sub_domains。匿名模式可用，不再用其他搜索方式。
+§
+HA社区：6/9已加Xiaomi Miot(21设备)；Midea AC LAN v0.3.22兼容补丁(常量+server类型)已打但一体机本地握手失败(online:false)；Dreame已解决py_mini_racer桩。待加：haier/hon、treeow。老缪偏好API操作。

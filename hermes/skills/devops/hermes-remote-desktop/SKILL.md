@@ -51,13 +51,38 @@ echo "HERMES_DASHBOARD_SESSION_TOKEN=<token>" >> ~/.hermes/.env
 
 ### 3. 配置 Tailscale Funnel 指向 Dashboard
 
-```bash
-# Funnel 指向 Dashboard 端口
-sudo tailscale funnel --bg 9119
+Tailscale v1.80+ 使用了新的 serve/funnel CLI。**关键区别**：
+- `tailscale funnel --bg <port>` 一键完成 HTTPS 监听 + 公网暴露
+- `tailscale serve --bg --set-path /path <url>` 添加子路径路由
+- **陷阱**：`tailscale serve --set-path` 会将公网暴露状态降级回 tailnet-only，之后必须重新运行 `tailscale funnel --bg <port>` 恢复
 
-# 验证
-tailscale serve status
-# 应显示：Funnel on → proxy http://127.0.0.1:9119
+**纯 Dashboard（无其他服务）：**
+```bash
+tailscale funnel --bg 9119
+```
+
+**多服务共享（如 Dashboard + HomeAssistant）：**
+```bash
+# 1. 先用 serve 设好所有路径
+tailscale serve --bg --set-path / http://127.0.0.1:9119
+tailscale serve --bg --set-path /ha http://localhost:8123
+
+# 2. 开启公网访问（选用 funnel 而非 serve，因 serve 只会 tailnet）
+tailscale funnel --bg 9119
+# 此时所有 serve 路径都会变为公网可访问
+
+# 3. 验证
+tailscale funnel status
+# 应显示 "Funnel on" 且列出所有路径
+```
+
+**从旧版迁移：**
+```bash
+# 清掉旧配置
+tailscale serve --https=443 off
+tailscale funnel --https=443 off
+
+# 重新按新语法配置
 ```
 
 ### 4. 端到端验证
@@ -105,14 +130,15 @@ git config --global url."https://ghproxy.net/https://github.com/".insteadOf "htt
 
 ## 故障排查
 
+更细的 Desktop 模型切换/发送失败排查清单见 `references/desktop-model-switch-send-fail.md`。
+
 | 现象 | 原因 | 解决 |
 |------|------|------|
-| Desktop 测试远程超时 | Funnel 指向了 8648（Node SPA） | 切到 9119（Dashboard） |
-| Funnel 测试返回 401 | Dashboard 绑定了 127.0.0.1，Host 校验拒绝 | 用 `--host 0.0.0.0` 重启 |
-| 模型页超时 "hermesapi" | Dashboard 没以 `--insecure` 启动或绑定不对 | 检查进程参数 `pgrep -af dashboard` |
-| 切 Funnel 端口后 serve 配置丢失 | 新版 tailscale 语法变化 | 用 `sudo tailscale funnel --bg <port>` |
-| Dashboard 自动回退到 127.0.0.1 | Gateway 检测到 dashboard 挂了就自动重启 | 先启 0.0.0.0 版本占住端口，gateway 重启的会绑定失败 |
-| 笔记本浏览器能打开但 Desktop 超时 | DNS/网络问题 | 切手机热点测试；确认 URL 完整无截断 |
+| Desktop 断开（所有服务正常） | Funnel 路由被其他服务挤占（如 HA 占了 `/`） | 重新配置 Funnel 恢复 Dashboard 到根路径 |
+| Desktop 已连接但发送失败/模型切换失败 | Dashboard 会话 token/前后端状态不同步，或 Desktop 调旧模型接口 | 重启 9119 Dashboard，Desktop 完全退出重开，新建会话测试 |
+| Funnel 状态显示 "tailnet only" | 添加子路径后公网被降级 | 重新运行 `tailscale funnel --bg 9119` |
+| Funnel 显示 443 端口冲突 | 已有 serve/funnel 监听 | 先 `tailscale funnel --https=443 off` 清旧配置 |
+| 切 Funnel 端口后 serve 配置丢失 | 新版 tailscale 语法变化 | 用 `tailscale funnel --bg <port>`（非 `sudo tailscale serve`） |
 
 ## 与 Web UI 的关系
 

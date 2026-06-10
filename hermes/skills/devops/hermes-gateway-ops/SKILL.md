@@ -19,6 +19,8 @@ tags: [gateway, ops, monitoring, health-check, wechat, feishu, recovery]
 - 怀疑 Gateway 进程崩溃
 - 系统启动后需要验证全链路连通性
 - Web UI 或 Dashboard 访问失败
+- Desktop 远程后端显示“网关断开”或任务跑着跑着失联
+- Desktop 反复“提示词发送失败”或“代理 1 个失败”，但 `9119/8642/8648/8420` 端口看似都在线
 - 设置开机自启、保活、常年挂机（systemd / 任务计划程序）
 
 ## 一、全链路健康检查步骤
@@ -522,11 +524,15 @@ Hermes 的 terminal 工具自动读取。不要用 `echo password | sudo -S cmd`
 | **Node SPA 不转发认证头** | Funnel 指向 Node SPA（8648）时，`X-Hermes-Session-Token` 不会被转发到 Python Dashboard，即使 token 正确也返回 401。 | Funnel 必须直接指向 Python Dashboard（9119），绕过 Node SPA。详见 `references/hermes-desktop-remote-backend.md`。 |
 | **Dashboard Host header 拒绝** | Dashboard 绑定 `127.0.0.1` 时，Funnel 转发的 TS.net Host header 被 `host_header_middleware` 拒绝（400）。 | Dashboard 必须 `--host 0.0.0.0`。详见 `references/hermes-desktop-remote-backend.md`。 |
 | **Hermes Desktop 远程后端认证** | Desktop 远程模式需要 Session Token（非 API_SERVER_KEY），与 Web UI 的 API Key 认证不同。Token 每次 Dashboard 重启变化。 | 固化 `HERMES_DASHBOARD_SESSION_TOKEN` 到 `.env`，Desktop 配置 Token 模式。详见 `references/hermes-desktop-remote-backend.md`。 |
+| **Desktop 发送失败不能只测 200/101** | `Dashboard 200`、`/api/ws 101`、甚至 `model.options` 成功都只能证明部分链路；Desktop 仍可能在实际 `prompt.submit` 路径失败。 | 必须做 `/api/ws` JSON-RPC 端到端探针：`gateway.ready` → `session.create` → `prompt.submit` → `message.delta/complete`。若探针返回 `OK` 而 Desktop 失败，转向 Desktop 本地缓存/版本/后端地址。详见 `references/hermes-desktop-jsonrpc-e2e-probe.md`。 |
 | **Tailscale Funnel 语法变更（v1.80+）** | 旧版 `tailscale funnel on` / `tailscale funnel off` 已废弃，新语法为 `tailscale funnel <port>` / `tailscale funnel --bg <port>`。 | 使用新语法。切端口：先 `tailscale funnel --https=443 off` 再 `tailscale funnel --bg <新端口>`。 |
+| **Funnel 多路径覆盖陷阱** | `tailscale serve --bg --set-path` 会重置 funnel 状态，公网降级为 tailnet-only。 | 先设所有 serve 路径，最后一步启用 funnel。详见 `references/tailscale-troubleshooting.md`。 |
 | **Hermes Desktop 国内安装** | Windows 国内安装需配 git/npm/electron/playwright 四个镜像，否则卡在 git fetch、npm install、Electron 下载等步骤。 | 先配置 `ghproxy.net`、`npmmirror.com`、`ELECTRON_MIRROR`、`PLAYWRIGHT_DOWNLOAD_HOST` 再安装。详见 `references/hermes-desktop-remote-backend.md`。 |
 | **平台检测「状态未知」误报** | 自检脚本只 grep 最后一条 Connected/Disconnected 日志，长时间稳定连接无新日志时误报为「状态未知」，累积 fail_count。2026-06-07 实战：6AM 自检报微信/飞书双异常，实际两平台均正常。 | 平台检测改为 6 层时间窗口判定（见 §10.1 v3 增强）：优先看 30 分钟内消息往来印证连通；无日志时参考 Gateway 进程稳定性推断；「状态未知但 Gateway 稳定」不计入 fail。 |
 | **灾备脚本路径硬编码** | 从旧笔记本迁移时，`$HOME/yanxinm` 在新机器上解析为 `/home/miao/yanxinm`（不存在）。脚本强切 SSH 绕过 ghproxy 代理。git push 失败时 `exit 1` 导致 cron 报错。 | 仓库路径改为 `$HOME/hermes-backup`；保持 HTTPS + ghproxy；push 失败退化为本地 tar + exit 0。详见 §十二。 |
 | **git push 被墙（smart HTTP 阻断）** | 即使 ghproxy HTTPS 代理对网页/API 可用，git smart HTTP 协议（fetch-pack/push）仍会 `unexpected disconnect`。SSH over 443 同样被 DPI 阻断。 | 灾备脚本不依赖 git push：先做本地 tar 备份，git push 仅最佳努力。网络恢复后自动同步。详见 `references/github-gfw-workaround.md`。 |
+| **Hermes Desktop Dashboard WebSocket 卡死** | Desktop 远程后端显示“网关断开”/长任务中途断，但 `hermes-gateway` 仍 active；Dashboard `/api/status` 可能超时，`/api/ws` 断开 | 区分 messaging Gateway 与 Dashboard WebSocket；只重启卡死的 9119 Dashboard，验 `local/public 200` + `/api/ws` `101` + 模型 `OK`。如果反复“提示词发送失败”，不要继续让用户重开 Desktop，必须加每分钟 Dashboard watchdog（HTTP + WS 双检查，失败只重启 9119）。详见 `references/hermes-desktop-dashboard-ws-stall.md`。 |
+| **Hermes Desktop token 与 systemd Dashboard 不一致** | `local/public 200` 和 `/api/ws 101` 看似正常，但 Desktop 反复“提示词发送失败/网关断开/代理 1 个失败”；`hermes-dashboard.service` 自动拉起无固定 token 的 9119 进程，手动固定 token 启动会因 `EADDRINUSE` 失败 | 先用 `ss -tlnp` 找 9119 真实 PID，再查 `/proc/$PID/environ` 是否有 `HERMES_DASHBOARD_SESSION_TOKEN`。若 systemd 服务未注入 token，必须先 sudo 停/禁用或 patch `/etc/systemd/system/hermes-dashboard.service`；否则 watchdog 会反复拉起错误实例。详见 `references/hermes-desktop-systemd-token-mismatch.md`。 |
 | **Tailscale Funnel 多端口搭建** | 单个 Funnel 只能指向单一端口。两个 Funnel（8648 + 9119）的 DNS 名不同，Desktop 不能在同一个 Base URL 中同时使用两个端口。 | 同时需要 Web UI + Desktop 的场景，Funnel 指向 Dashboard (9119)，Web UI 通过 Tailscale IP 或内网直接访问。详见 `references/hermes-desktop-remote-backend.md`。 |
 
 ## 六、事故复盘记录
@@ -538,8 +544,12 @@ Hermes 的 terminal 工具自动读取。不要用 `echo password | sudo -S cmd`
 - `references/chrome-user-space-install.md` — Chrome 免 sudo 用户空间安装 + Hermes browser 工具集成
 - `references/scheduler-overnight-gap-detection.md` — 定时调度器过夜停顿检测模式（凌晨备份丢失的排查与加固）
 - `references/gateway-external-sigterm-pattern.md` — 外部 SIGTERM 杀 Gateway 时 exit-diag.log 无记录的分析及诊断方法
-- `references/tailscale-troubleshooting.md` — Tailscale DERP 单向阻断诊断与 SSH 隧道备用方案（2026-06-07）
+- `references/tailscale-troubleshooting.md` — Tailscale DERP 单向阻断诊断与 SSH 隧道备用方案（2026-06-07）；Funnel 多路径路由顺序陷阱（2026-06-09）
+- `references/ubuntu-snap-store-fix.md` — Ubuntu Software (Snap Store) 加载空白修复：dbus-x11 缺失 + apt 源被墙（2026-06-09）
 - `references/hermes-desktop-remote-backend.md` — Hermes Desktop 远程后端配置：Funnel + Dashboard --insecure + Session Token 认证（2026-06-08）
+- `references/hermes-desktop-dashboard-ws-stall.md` — Desktop 远程任务中途“网关断开”时，区分 Gateway 与 Dashboard WebSocket，并重启/验收 9119 的流程
+- `references/hermes-desktop-systemd-token-mismatch.md` — systemd 自动拉起无固定 token 的 Dashboard，导致 Desktop 远程后端反复提示词发送失败/网关断开的诊断与修复
+- `references/hermes-desktop-jsonrpc-e2e-probe.md` — Desktop 远程后端“提示词发送失败”时的 `/api/ws` JSON-RPC 端到端探针：`session.create` + `prompt.submit` 验证真实发送路径
 
 ### 6.1 调度器过夜停顿（凌晨备份丢失）
 

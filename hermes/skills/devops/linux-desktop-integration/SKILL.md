@@ -129,32 +129,49 @@ Ubuntu 22.04 uses `snap-store` (a snap-packaged GNOME Software). When app detail
 # Check if snap-store is running
 ps aux | grep '[s]nap-store'
 
-# Check journal for PackageKit source errors
-journalctl -n 30 --no-pager /snap/snap-store/*/usr/bin/snap-store | grep "无法下载"
+# Check journal for D-Bus or PackageKit errors
+journalctl -n 30 --no-pager /snap/snap-store/*/usr/bin/snap-store | grep -E "dbus-launch|无法下载"
 ```
 
-Common failure pattern:
+Two distinct failure patterns exist:
+
+**Pattern A — D-Bus missing (list opens, detail pages blank):**
+```
+dconf failed to commit changes: 执行子进程"dbus-launch"失败（No such file or directory）
+gs_app_list_length: assertion 'GS_IS_APP_LIST (list)' failed
+```
+
+**Pattern B — Apt sources unreachable (all pages slow/blank):**
 ```
 E: 无法下载 http://security.ubuntu.com/ubuntu/dists/jammy-security/InRelease
-E: 无法下载 https://pkgs.tailscale.com/stable/ubuntu/dists/jammy/InRelease
 ```
 
 ### Fix
-1. **Ensure all apt sources use domestic mirrors** — security.ubuntu.com and third-party repos must be reachable
-2. **Disable unreachable third-party sources:**
-   ```bash
-   sudo mv /etc/apt/sources.list.d/<unreachable>.list /etc/apt/sources.list.d/<unreachable>.list.disabled
-   ```
-3. **Point security.ubuntu.com to a mirror:**
-   ```bash
-   sudo sed -i 's|http://security.ubuntu.com/ubuntu|https://mirrors.tuna.tsinghua.edu.cn/ubuntu|g' /etc/apt/sources.list
-   ```
-4. **Clear snap-store cache and restart:**
-   ```bash
-   pkill -f snap-store
-   rm -rf ~/.cache/gnome-software ~/.local/share/gnome-software
-   DISPLAY=:0 snap-store &
-   ```
+
+**Always start with Pattern A (dbus-x11)** — it's the most common on minimal Ubuntu installs:
+
+```bash
+# 1. Install dbus-x11 (provides dbus-launch)
+which dbus-launch || sudo apt install dbus-x11 -y
+
+# 2. Restart snap-store
+pkill -f snap-store
+```
+
+**Then fix Pattern B if the issue persists:**
+
+```bash
+# 3. Ensure all apt sources use domestic mirrors
+sudo sed -i 's|http://security.ubuntu.com/ubuntu|https://mirrors.tuna.tsinghua.edu.cn/ubuntu|g' /etc/apt/sources.list
+
+# 4. Disable unreachable third-party sources
+sudo mv /etc/apt/sources.list.d/<unreachable>.list /etc/apt/sources.list.d/<unreachable>.list.disabled
+
+# 5. Refresh and restart
+sudo apt update
+rm -rf ~/.cache/gnome-software ~/.local/share/gnome-software
+DISPLAY=:0 snap-store &
+```
 
 ### Verification
 ```bash

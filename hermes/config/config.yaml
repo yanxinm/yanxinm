@@ -1,12 +1,13 @@
 model:
-  default: deepseek-v4-pro
+  base_url: ''
+  default: deepseek-v4-flash
   provider: deepseek
-  base_url: https://api.deepseek.com/v1
 providers: {}
 fallback_providers: []
 credential_pool_strategies: {}
 toolsets:
 - hermes-cli
+max_concurrent_sessions: null
 agent:
   max_turns: 90
   gateway_timeout: 1800
@@ -23,6 +24,7 @@ agent:
   gateway_auto_continue_freshness: 3600
   image_input_mode: auto
   disabled_toolsets: []
+  reasoning_effort: xhigh
 terminal:
   backend: local
   modal_mode: auto
@@ -255,7 +257,7 @@ display:
   copy_shortcut: auto
   tool_progress: all
 dashboard:
-  theme: default
+  theme: cyberpunk
   show_token_analytics: false
   oauth:
     client_id: ''
@@ -550,36 +552,30 @@ custom_providers:
   base_url: https://slb.apikey.fun/v1
   model: gpt-5.5
   name: fun-codex
-plugins:
-  enabled:
-  - disk-cleanup
-  - memtensor
-  disabled: []
-session_reset:
-  at_hour: 4
-  idle_minutes: 1440
-  mode: both
+known_plugin_toolsets:
+  cli:
+  - spotify
 mcp_servers:
   chrome-devtools:
-    command: npx
     args:
     - -y
     - chrome-devtools-mcp@latest
-    timeout: 120
-  prompt-optimizer:
     command: npx
+    timeout: 120
+  hermes-studio:
+    command: hermes-web-ui-mcp
+    enabled: true
+    env:
+      HERMES_WEBUI_STATE_DIR: /home/miao/.hermes-web-ui
+      HERMES_WEB_UI_HOME: /home/miao/.hermes-web-ui
+      HERMES_WEB_UI_MANAGED_MCP: '1'
+      HERMES_WEB_UI_URL: http://127.0.0.1:8648
+  prompt-optimizer:
     args:
     - -y
     - prompt-optimizer-mcp
+    command: npx
     timeout: 60
-  hermes-studio:
-    command: hermes-web-ui-mcp
-    env:
-      HERMES_WEB_UI_URL: http://127.0.0.1:8648
-      HERMES_WEB_UI_HOME: /home/miao/.hermes-web-ui
-      HERMES_WEBUI_STATE_DIR: /home/miao/.hermes-web-ui
-      HERMES_WEB_UI_MANAGED_MCP: '1'
-    enabled: true
 platform_toolsets:
   cli:
   - browser
@@ -599,9 +595,15 @@ platform_toolsets:
   - tts
   - vision
   - web
-known_plugin_toolsets:
-  cli:
-  - spotify
+plugins:
+  disabled: []
+  enabled:
+  - disk-cleanup
+  - memtensor
+session_reset:
+  at_hour: 4
+  idle_minutes: 1440
+  mode: both
 
 # ── Fallback Model ────────────────────────────────────────────────────
 # Automatic provider failover when primary is unavailable.

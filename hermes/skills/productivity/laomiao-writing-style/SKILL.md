@@ -4,6 +4,7 @@ description: 老缪（缪言信）工作台账四类公文的写作风格、排�
 category: productivity
 tags: [写作规范, 公文模板, 排版格式, 策划方案, 意识形态, 请示, 工作总结]
 references:
+  - references/sync-architecture.md            # 文档同步管线（笔记本→基地 Samba+rsync）
   - references/report-style-analysis.md        # 月度工作报告+意识形态风格分析
   - references/proposal-style-analysis.md      # 策划方案风格分析
   - references/request-report-analysis.md      # 请示与报告公文格式分析
@@ -16,7 +17,9 @@ references:
 
 ## 概述
 
-基于 `/mnt/e/百度云同步盘/工作台账/` 2019-2026年实际文档分析。涵盖四类核心文档。
+基于 2019-2026 年实际文档分析（3726 份 docx/xlsx/pdf/txt/md，2.49GB）。涵盖四类核心文档。
+
+> 工作台账文档管线见 `references/sync-architecture.md`。
 
 ---
 

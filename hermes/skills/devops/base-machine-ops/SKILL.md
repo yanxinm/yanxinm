@@ -15,6 +15,12 @@ M710q Ubuntu 基地（`miao-thinkcentre-m710q-n080`）的远程访问、网络�
 
 ---
 
+## Home Assistant on the base
+
+When operating the base-machine Home Assistant Docker stack, use `references/home-assistant-docker-ops.md`. It captures the HA Docker/compose shape, API proxy pattern, Bluetooth/AppArmor fix (`privileged: true` + D-Bus mount), HA token/auth pitfalls, and config-flow inspection commands.
+
+---
+
 ## 一、远程访问方案
 
 ### 方案 A：Tailscale Funnel（推荐，免费 HTTPS 公网，不依赖 Tailscale 客户端）
@@ -48,7 +54,7 @@ tailscale funnel off  # 旧版关闭
 
 ---
 
-## 一之补充：Hermes Desktop 远程后端
+## 一之补充 A：Tailscale Funnel 路径路由最佳实践\n\n### HA 与 Hermes Dashboard 共存\n\n**问题**：HA 不支持子路径（`/ha` 会 400 Bad Request）。Funnel 路径代理到 HA 根路径时，HA 收到的是 `/ha/xxx` 而非 `/xxx`，导致路由失败。\n\n**解决方案**：把 HA 放 Funnel 根路径 `/`，其他服务放子路径：\n\n```bash\n# HA → 根路径（必须）\nsudo tailscale funnel --bg --https=443 --set-path=/ http://localhost:8123\n# Hermes Dashboard → /dash（Dashboard 对子路径容忍度高）\nsudo tailscale funnel --bg --https=443 --set-path=/dash http://127.0.0.1:9119\n```\n\n结果：\n- `https://<host>.ts.net/` → HA\n- `https://<host>.ts.net/dash` → Hermes Dashboard\n\n### 端口选择\n\n⚠️ Funnel 支持的标准端口是 443。非标准端口（8443、10000）**可能在笔记本端被防火墙/代理拦截**，表现为 `ERR_CONNECTION_TIMED_OUT`。优先用 443。\n\n### 笔记本 Tailscale 单向不通排查\n\n症状：基地→笔记本通，笔记本→基地不通（`ping 100.86.13.11` 超时）。\n\n```bash\n# 基地查状态\ntailscale status  # 看 ethan 是否 active; relay \"tok/sfo\" 正常\n# 笔记本查状态  \ntailscale status  # 确认基地显示 active; tx/rx 有数据说明链路在走\n```\n\n如果 `tailscale status` 两端都显示 active 且 tx/rx 有非零值，但 TCP 连接仍不通：\n1. **检查 Funnel 端口**：笔记本可能只放行 443，非标端口被拦\n2. **检查 ufw**：基地 `sudo ufw status`，确认目标端口已放行\n3. **重启笔记本 Tailscale**：退出重开客户端\n4. **终极方案**：用 Funnel 443 代替 Tailscale 直连 IP\n\n---\n\n## 一之补充 B：Hermes Desktop 远程后端
 
 基地可作为 Hermes Desktop 的远程后端。笔记本安装 Hermes Desktop 后选 **Remote** 模式连接。
 
@@ -125,6 +131,7 @@ tailscale ping 100.86.148.56                 # 基地→笔记本
 |------|------|------|
 | 基地→笔记本通，笔记本→基地不通 | 单位防火墙阻出站 DERP | 笔记本重启 Tailscale |
 | 两边显示在线但 ping 不通 | DERP 中继失效 | 重启两端 Tailscale |
+| ping 通但 TCP 全部超时（SSH/SMB/HTTP） | **DERP 中继不转发 TCP**（已验证：双向 SSH/22、SMB/445、HTTP/18888 全超时，防火墙关闭也不行） | 必须等两台机器直连（同一局域网），走中继时跳过同步 |
 | headless 认证 | 无浏览器 | Admin→Keys→Generate auth key，`sudo tailscale up --auth-key=<key> --accept-routes` |
 
 ---
@@ -166,15 +173,22 @@ git config --global url."https://ghproxy.net/https://github.com/".insteadOf "htt
 
 ## 四、基地关键端口
 
+Home Assistant 相关部署细节、蓝牙 Docker 修复、Xiaomi Miot 验证流排查见 [`references/home-assistant-m710q.md`](references/home-assistant-m710q.md)。
+
 | 端口 | 服务 | 绑定 | 说明 |
 |------|------|------|------|
 | 8123 | Home Assistant | 0.0.0.0 | 智能家居控制面板 |
+| 8080 | HA API Proxy | 0.0.0.0 | 注入令牌的 HA 代理，无需认证即可调用 API |
 | 8648 | Hermes Web UI / Studio (Node SPA) | 0.0.0.0 | Vue 版完整聊天界面，但不能用于 Desktop 远程后端 |
 | 9119 | Hermes Dashboard (Python) | 0.0.0.0 | API 服务 + 基础 Web UI，Desktop 远程后端口。`--insecure --host 0.0.0.0` |
 | 8642 | Hermes Gateway API | 127.0.0.1 | 仅本地 |
 | 8420 | Gateway 内部 | 127.0.0.1 | 仅本地 |
 | 3071 | html-video Studio | 0.0.0.0 | 需先 patch 绑定地址 |
+| 8123 | Home Assistant Web UI/API | host 网络 | HA Docker 本体；网页登录/集成配置走此端口 |
+| 8080 | HA API Proxy | 0.0.0.0 | `/home/miao/ha_proxy.py` 注入 HA 长期令牌后转发到 8123；供脚本/API/Tailscale 调用 |
 | 22 | SSH | 0.0.0.0 | 远程管理 |
+| 8123 | Home Assistant | 0.0.0.0 | HA 网页后台，仅在本地/内网直接访问 |
+| 8080 | HA API Proxy | 0.0.0.0 | Token 注入代理，Tailscale `http://100.86.13.11:8080/api/` |
 | 1883 | Mosquitto MQTT (预留) | — | 未来可选 |
 
 ---
@@ -226,6 +240,7 @@ services:
     container_name: homeassistant
     image: ghcr.io/home-assistant/home-assistant:stable
     network_mode: host        # 必须 host 模式 — mDNS/UPnP 发现设备
+    privileged: true          # ⚠️ 蓝牙需要！否则 AppArmor 阻止 D-Bus → setup_retry
     restart: unless-stopped
     volumes:
       - /home/miao/docker/ha/config:/config
@@ -263,6 +278,36 @@ sg docker -c "docker restart homeassistant"
 
 ⚠️ Docker 创建的 `/config` 目录属主是 root，所以需要 `sudo`。
 
+### HACS 下载失败 → 命令行兜底安装 custom_components
+
+当 HACS 在 HA Web UI 中下载 GitHub 插件失败（`Could not download, see log for details`），在基地命令行用 ghproxy 镜像手动安装：
+
+**方法 A：wget zip（标准）**
+```bash
+# 示例：批量下载三个插件
+wget -q "https://ghproxy.net/https://github.com/al-one/hass-xiaomi-miot/archive/refs/heads/master.zip" -O /tmp/xiaomi_miot.zip
+wget -q "https://ghproxy.net/https://github.com/Tasshack/dreame-vacuum/archive/refs/heads/master.zip" -O /tmp/dreame.zip
+wget -q "https://ghproxy.net/https://github.com/hasscc/meiju/archive/refs/heads/master.zip" -O /tmp/meiju.zip
+
+# 逐个解压安装（zip 内结构: <repo>-<branch>/custom_components/<name>/）
+for f in xiaomi_miot dreame meiju; do
+  rm -rf /tmp/${f}_extract
+  unzip -qo /tmp/${f}.zip -d /tmp/${f}_extract
+  dir=$(ls /tmp/${f}_extract | head -1)
+  sudo cp -r /tmp/${f}_extract/${dir}/custom_components/* /home/miao/docker/ha/config/custom_components/
+done
+sg docker -c "docker restart homeassistant"
+```
+
+**方法 B：git clone via ghproxy（wget 超时时）**
+```bash
+git clone --depth 1 https://ghproxy.net/https://github.com/banto6/haier /tmp/haier_repo
+sudo cp -r /tmp/haier_repo/custom_components/haier /home/miao/docker/ha/config/custom_components/
+```
+
+⚠️ 部分仓库 `custom_components` 目录名与 HACS slug 不同（如 `treeow_home`），需 `ls` 确认后再 cp。
+⚠️ 所有写入 `/config` 的操作需 `sudo`（Docker volume 属主为 root）。
+
 ### HA 反向代理信任配置（Funnel 必配）
 
 HA 在 Tailscale Funnel 后面时，需要信任来自 127.0.0.1 的反向代理请求，否则返回 400：
@@ -298,6 +343,31 @@ HA 在 `network_mode: host` 下监听 0.0.0.0:8123，但 ufw 默认 DROP INPUT�
 sudo ufw allow 8123/tcp comment 'Home Assistant'
 sudo ufw status | grep 8123   # 确认
 ```
+
+### 蓝牙集成 — 需要 privileged 模式
+
+**症状**：蓝牙集成状态 `setup_retry`，日志报：
+```
+Failed to start Bluetooth: [org.freedesktop.DBus.Error.AccessDenied] 
+An AppArmor policy prevents this sender...
+```
+
+**根因**：Docker 的 AppArmor 默认策略阻止容器通过 D-Bus 访问蓝牙硬件。
+
+**修复**：在 `docker-compose.yml` 中加 `privileged: true`，然后重建容器：
+```bash
+sg docker -c "docker compose -f /home/miao/docker/ha/docker-compose.yml down"
+sg docker -c "docker compose -f /home/miao/docker/ha/docker-compose.yml up -d"
+```
+
+⚠️ 数据不受影响（`/config` 是 bind mount volume）。重建容器约 30 秒。
+
+当无法通过 Web UI 创建长期令牌时，可手动操作 HA 的 auth 存储。详见：
+- [`references/ha-auth-token-creation.md`](references/ha-auth-token-creation.md) — auth 存储结构、JWT 签发方法、关键坑点
+- [`references/ha-gen-token.py`](references/ha-gen-token.py) — 宿主机上执行的令牌生成脚本（操作 bind mount 路径，需先 `docker stop`）
+- [`references/ha-proxy-notes.md`](references/ha-proxy-notes.md) — ha_proxy.py 代理方案说明
+
+⚠️ 核心坑：**HA 启动后会用内存数据覆盖 auth 文件**。修改 auth 存储前必须先 `docker stop homeassistant`。
 
 ### 中国智能家居平台接入参考
 
@@ -352,7 +422,41 @@ hermes profile show <name>       # 查看详情
 
 ---
 
-## 十、Windows Desktop 安装（国内环境）
+## 七、Home Assistant Docker on 基地
+
+HA 在基地用 Docker Compose 运行时，详见 [`references/home-assistant-docker-ops.md`](references/home-assistant-docker-ops.md)。该参考包含：HA/proxy 验证命令、`privileged: true` 修复蓝牙 AppArmor/D-Bus、HA 长期令牌代理模式、HA 本地密码 hash 的 base64(bcrypt) 格式、Xiaomi Miot 登录排障，以及已检测到的自定义集成清单。
+
+---
+
+## 七、Home Assistant on Base Machine
+
+HA Docker / integration troubleshooting notes live in [`references/home-assistant-docker-integrations.md`](references/home-assistant-docker-integrations.md). Use this when operating the base-machine HA stack, especially for:
+
+- HA Docker compose shape (`host` networking, D-Bus mount, `privileged: true` for Bluetooth)
+- HA API proxy on port 8080 with long-lived token injection
+- Xiaomi Miot account flow and `need_verify` handling
+- Midea AC LAN compatibility patches for HA 2026 removed unit constants
+
+---
+
+## 七、Home Assistant / 智能家居运维
+
+HA Docker、ha_proxy、蓝牙 AppArmor、Xiaomi Miot、Midea AC LAN 等故障处理见 [`references/home-assistant-ha-setup.md`](references/home-assistant-ha-setup.md)。处理第三方账号时使用 `/tmp` 临时文件，完成后删除；不要在回复中复述密码。
+
+---
+
+## 七、Home Assistant on 基地
+
+HA/智能家居集成排障经验见 [`references/home-assistant-ops.md`](references/home-assistant-ops.md)。覆盖 Docker privileged 蓝牙修复、HA API proxy、Xiaomi Miot 二次验证、Midea AC LAN 在 HA 2026 的兼容补丁、Dreame Vacuum IP/token 取数注意事项，以及临时凭据清理规范。
+
+---
+
+## 八、Windows Desktop 安装（国内环境）
+
+## 八、Home Assistant 基础运维
+
+基地运行 HA Docker 容器。详细设置（HA 代理搭建、插件兼容性修复（HA 2026 const 变更）、设备 LAN 发现）见 [`references/ha-infra-setup.md`](references/ha-infra-setup.md)。
+
 
 在笔记本（Windows）上安装 Hermes Desktop 时遇到的坑和解决方案。
 
@@ -397,7 +501,99 @@ git config --global --list | findstr ghproxy
 
 ---
 
-## 十一、第三方 Skill 安装
+## 十一、基地路径差异（与笔记本 WSL 的区别）
+
+基地是独立 Ubuntu 机器（M710q），**没有 WSL 层**。笔记本上的 Hermes 运行在 WSL 中，可通过 `/mnt/c/`、`/mnt/e/` 访问 Windows 盘符。基地上 `/mnt/` 为空目录，没有这些挂载点。
+
+### 常见陷阱
+
+| 笔记本 WSL 路径 | 基地是否可用 | 说明 |
+|-----------------|-------------|------|
+| `/mnt/e/百度云同步盘/工作台账/` | ❌ 不可用 | 独立 Ubuntu 无 Windows 盘符挂载 |
+| `/mnt/c/Users/yanxi/...` | ❌ 不可用 | 同上 |
+| `~/` 下的文件 | ✅ 可用 | 但内容可能不同（不同机器） |
+| Tailscale IP 挂载 | ✅ 可用 | 需先配置网络共享 |
+
+### 迁移时需检查的 cron 任务
+
+从笔记本迁移到基地后，需验证每个 cron 任务中的路径是否在基地上可达。特别注意：
+- 脚本中的硬编码路径（`weekly_scan.py` SRC 等）
+- prompt 中引用的文件夹路径
+- 外部依赖（gbrain、convert_docs.py）是否已同步安装
+
+验证命令：`ls <路径> 2>&1` 直接测试。
+
+### 诊断技巧：排除 Windows 防火墙干扰
+
+当 Tailscale TCP 不通时，Windows 防火墙是主要嫌疑。排除法：
+
+```powershell
+# 1. 临时全关防火墙（诊断用，测完立即恢复）
+Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
+
+# 2. 从基地测试 TCP 连接
+#    （如 SSH/curl 测试）
+
+# 3. 立即恢复防火墙
+Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled True
+```
+
+- 关了防火墙仍不通 → 问题不在防火墙，在 Tailscale 中继（DERP 不转发 TCP）或网络层面
+- 关了防火墙能通 → 问题在防火墙规则，需精确添加 RemoteAddress 规则
+
+⚠️ **关键发现**：Tailscale DERP 中继**双向 TCP 全不通**（已验证：SMB/445、SSH/22、HTTP/18888 全部超时，即使 Windows 防火墙完全关闭）。`tailscale ping` 能通但那是 Tailscale 自有协议，与 TCP 无关。**文件同步只能依赖 Tailscale 直连**（两台机器在同一局域网时）。
+
+#### 方案：SSH + rsync（仅直连时执行）
+
+**前提**：
+- 笔记本启用 OpenSSH Server 并配置免密登录
+- 两台机器在同一局域网（Tailscale 显示 `direct` 而非 `relay "xxx"`）
+
+**笔记本端配置**：
+```powershell
+# 笔记本管理员 PowerShell
+Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+Start-Service sshd
+Set-Service -Name sshd -StartupType Automatic
+New-NetFirewallRule -DisplayName "SSH for Tailscale" -Direction Inbound -Protocol TCP -LocalPort 22 -RemoteAddress 100.64.0.0/10 -Action Allow
+
+# 添加基地公钥（从基地 cat ~/.ssh/id_ed25519.pub 获取）
+mkdir C:\Users\yanxi\.ssh -Force
+Add-Content C:\Users\yanxi\.ssh\authorized_keys "<基地公钥>"
+```
+
+**基地端同步脚本** `~/.hermes/scripts/sync_taizhang.sh`：
+- 先通过 `tailscale status --json` 检测是否直连（非直连直接退出）
+- 直连时执行 `rsync -av` 增量拉取文档（仅 .docx/.xlsx/.pdf/.txt/.md）
+- 仅拉取不删除，本地副本不丢历史
+
+**中继检测技巧**：
+```bash
+# 从 tailscale status JSON 提取中继信息
+RELAY=$(tailscale status --json | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+for p in d.get('Peer',{}).values():
+    if p.get('HostName')=='ethan':
+        print(p.get('Relay',''))
+        break
+")
+# 空串 = 直连；非空 = 走中继，跳过同步
+```
+
+**定时任务**：
+- `5323ccd7cf51`「周末台账同步」：周六+周日 12:00，no_agent 跑 `sync_taizhang.sh`
+- `dfdd687d1890`「工作台账扫描」：周一 9:00，LLM 加载 markitdown 扫描本地 `~/工作台账/`
+
+**同步参数说明**：
+| 选项 | 值 | 说明 |
+|------|-----|------|
+| 文件类型 | docx, xlsx, pdf, txt, md | 排除 PPT（3.7GB）和视频 |
+| 总量 | ~3700 文件, 2.5GB | rsync 首次 3-4 分钟，后续增量秒级 |
+| 调度 | 周六+周日 12:00 | 双保险，命中周末在家的概率 |
+| 容错 | 中继时静默跳过 | 不报错，等下一轮直连 |
+
+## 十二、第三方 Skill 安装
 
 Hermes 会自动发现 `~/.hermes/skills/<name>/` 下任何包含 `SKILL.md` 的目录，无需手动注册。
 

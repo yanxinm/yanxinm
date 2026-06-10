@@ -20,15 +20,15 @@
       "schedule_display": "30 8 * * *",
       "repeat": {
         "times": null,
-        "completed": 2
+        "completed": 3
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-06-06T16:17:49.052818+08:00",
-      "next_run_at": "2026-06-09T08:30:00+08:00",
-      "last_run_at": "2026-06-08T08:31:31.677660+08:00",
+      "next_run_at": "2026-06-10T08:30:00+08:00",
+      "last_run_at": "2026-06-09T08:31:27.580542+08:00",
       "last_status": "ok",
       "last_error": null,
       "last_delivery_error": null,
@@ -40,22 +40,22 @@
     },
     {
       "id": "5323ccd7cf51",
-      "name": "\u6bcf\u5468\u53f0\u8d26\u626b\u63cf",
-      "prompt": "\u6bcf\u5468\u4e94\u4e2d\u5348\u81ea\u52a8\u626b\u63cfE:/\u767e\u5ea6\u4e91\u540c\u6b65\u76d8/\u5de5\u4f5c\u53f0\u8d26\uff0c\u5c06\u65b0\u589e\u6587\u6863\u8f6c\u4e3aMarkdown\u5e76\u5bfc\u5165GBrain\u77e5\u8bc6\u5e93\u3002",
+      "name": "\u5468\u672b\u53f0\u8d26\u540c\u6b65",
+      "prompt": "\u5468\u672b SSH+rsync \u4ece\u7b14\u8bb0\u672c\u540c\u6b65\u5de5\u4f5c\u53f0\u8d26\u5230\u57fa\u5730\u672c\u5730\u526f\u672c\u3002\u4ec5 Tailscale \u76f4\u8fde\u65f6\u6267\u884c\u3002",
       "skills": [],
       "skill": null,
       "model": null,
       "provider": null,
       "base_url": null,
-      "script": "weekly_scan.py",
+      "script": "sync_taizhang.py",
       "no_agent": true,
       "context_from": null,
       "schedule": {
         "kind": "cron",
-        "expr": "0 12 * * 5",
-        "display": "0 12 * * 5"
+        "expr": "0 12 * * 6,0",
+        "display": "0 12 * * 6,0"
       },
-      "schedule_display": "0 12 * * 5",
+      "schedule_display": "0 12 * * 6,0",
       "repeat": {
         "times": null,
         "completed": 0
@@ -65,7 +65,7 @@
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-06-06T16:17:49.615378+08:00",
-      "next_run_at": "2026-06-12T12:00:00+08:00",
+      "next_run_at": "2026-06-13T12:00:00+08:00",
       "last_run_at": null,
       "last_status": null,
       "last_error": null,
@@ -172,17 +172,17 @@
       "schedule_display": "10 8 * * *",
       "repeat": {
         "times": null,
-        "completed": 2
+        "completed": 3
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-06-06T16:17:51.326526+08:00",
-      "next_run_at": "2026-06-10T08:10:00+08:00",
-      "last_run_at": "2026-06-08T08:10:47.491360+08:00",
-      "last_status": "error",
-      "last_error": "Script exited with code 1\nstderr:\n/home/miao/.hermes/scripts/hermes_backup.sh: \u7b2c 11 \u884c\uff1a cd: /home/miao/yanxinm: \u6ca1\u6709\u90a3\u4e2a\u6587\u4ef6\u6216\u76ee\u5f55",
+      "next_run_at": "2026-06-11T08:10:00+08:00",
+      "last_run_at": "2026-06-09T08:10:53.654540+08:00",
+      "last_status": "ok",
+      "last_error": null,
       "last_delivery_error": null,
       "deliver": "weixin",
       "origin": null,
@@ -210,15 +210,15 @@
       "schedule_display": "0 9 * * *",
       "repeat": {
         "times": null,
-        "completed": 2
+        "completed": 3
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-06-06T16:17:51.896480+08:00",
-      "next_run_at": "2026-06-09T09:00:00+08:00",
-      "last_run_at": "2026-06-08T09:07:31.792617+08:00",
+      "next_run_at": "2026-06-10T09:00:00+08:00",
+      "last_run_at": "2026-06-09T09:04:16.646043+08:00",
       "last_status": "ok",
       "last_error": null,
       "last_delivery_error": null,
@@ -288,15 +288,15 @@
       "schedule_display": "every 2m",
       "repeat": {
         "times": null,
-        "completed": 1275
+        "completed": 1755
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-06-06T16:17:53.039117+08:00",
-      "next_run_at": "2026-06-09T08:11:47.110198+08:00",
-      "last_run_at": "2026-06-09T08:09:47.110198+08:00",
+      "next_run_at": "2026-06-10T08:10:23.054409+08:00",
+      "last_run_at": "2026-06-10T08:08:23.054409+08:00",
       "last_status": "ok",
       "last_error": null,
       "last_delivery_error": null,
@@ -326,15 +326,15 @@
       "schedule_display": "0 0,6,12,18 * * *",
       "repeat": {
         "times": null,
-        "completed": 11
+        "completed": 15
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-06-06T16:17:53.601004+08:00",
-      "next_run_at": "2026-06-09T12:00:00+08:00",
-      "last_run_at": "2026-06-09T06:00:46.130853+08:00",
+      "next_run_at": "2026-06-10T12:00:00+08:00",
+      "last_run_at": "2026-06-10T06:00:22.012269+08:00",
       "last_status": "ok",
       "last_error": null,
       "last_delivery_error": null,
@@ -390,7 +390,7 @@
     {
       "id": "dfdd687d1890",
       "name": "\u5de5\u4f5c\u53f0\u8d26\u626b\u63cf",
-      "prompt": "\u4f60\u662f\u8001\u7f2a\u5199\u4f5c\u56e2\u961f\u7684\u6587\u6848\u4e13\u5458\u3002\u8bf7\u5b8c\u6210\u4ee5\u4e0b\u4efb\u52a1\uff1a\n\n1. \u626b\u63cf /mnt/e/\u767e\u5ea6\u4e91\u540c\u6b65\u76d8/\u5de5\u4f5c\u53f0\u8d26/ \u76ee\u5f55\uff0c\u5217\u51fa\u6700\u8fd17\u5929\u5185\u65b0\u589e\u6216\u4fee\u6539\u7684 .docx \u6587\u4ef6\n2. \u5bf9\u6bcf\u4e2a\u65b0\u6587\u6863\uff1a\u63d0\u53d6\u6807\u9898\u548c\u5173\u952e\u5185\u5bb9\u6458\u8981\uff08\u4f7f\u7528 markitdown \u6216 python-docx\uff09\n3. \u5224\u65ad\u6587\u6863\u7c7b\u578b\uff08\u6708\u5ea6\u62a5\u544a/\u610f\u8bc6\u5f62\u6001/\u7b56\u5212\u65b9\u6848/\u8bf7\u793a/\u5de5\u4f5c\u603b\u7ed3/\u5236\u5ea6\u6587\u4ef6/\u5176\u4ed6\uff09\n4. \u8f93\u51fa\u4e00\u4efd\u7b80\u62a5\uff1a\u6709\u54ea\u4e9b\u65b0\u6587\u6863\u3001\u5206\u522b\u4ec0\u4e48\u7c7b\u578b\u3001\u662f\u5426\u9700\u8981\u66f4\u65b0 laomiao-writing-style \u6280\u80fd\n5. \u5982\u679c\u6709\u503c\u5f97\u7eb3\u5165\u6280\u80fd\u7684\u65b0\u77e5\u8bc6\uff0c\u4e3b\u52a8\u66f4\u65b0\u6280\u80fd\n\n\u5c06\u7ed3\u679c\u901a\u8fc7\u5fae\u4fe1\u53d1\u9001\u7ed9\u8001\u7f2a\uff08\u7f2a\u8a00\u4fe1\uff09\uff0c\u6807\u9898\uff1a\u3010\u5de5\u4f5c\u53f0\u8d26\u5468\u62a5\u3011YYYY\u5e74MM\u6708DD\u65e5\n\n\u26a0\ufe0f \u5982\u679c /mnt/e/ \u4e0d\u53ef\u8bbf\u95ee\uff0c\u8bf4\u660e\u57fa\u5730\u65e0\u6cd5\u6302\u8f7d Windows \u78c1\u76d8\uff0c\u56de\u590d\u300c\u65e0\u6cd5\u8bbf\u95ee\u5de5\u4f5c\u53f0\u8d26\u76ee\u5f55\uff0c\u8bf7\u68c0\u67e5\u57fa\u5730\u662f\u5426\u5df2\u6302\u8f7d Windows \u78c1\u76d8\u300d\u3002",
+      "prompt": "\u4f60\u662f\u8001\u7f2a\u5199\u4f5c\u56e2\u961f\u7684\u6587\u6848\u4e13\u5458\u3002\u8bf7\u5b8c\u6210\u4ee5\u4e0b\u4efb\u52a1\uff1a\n\n1. \u626b\u63cf /home/miao/\u5de5\u4f5c\u53f0\u8d26/ \u76ee\u5f55\uff0c\u5217\u51fa\u6700\u8fd17\u5929\u5185\u65b0\u589e\u6216\u4fee\u6539\u7684 .docx \u6587\u4ef6\n2. \u5bf9\u6bcf\u4e2a\u65b0\u6587\u6863\uff1a\u63d0\u53d6\u6807\u9898\u548c\u5173\u952e\u5185\u5bb9\u6458\u8981\uff08\u4f7f\u7528 markitdown \u6280\u80fd\u5c06 docx \u8f6c markdown \u540e\u5206\u6790\uff09\n3. \u6309\u6587\u6863\u7c7b\u578b\u5206\u7c7b\u6c47\u603b\uff08\u6708\u5ea6\u62a5\u544a/\u610f\u8bc6\u5f62\u6001/\u7b56\u5212\u65b9\u6848/\u8bf7\u793a/\u5de5\u4f5c\u603b\u7ed3/\u5176\u4ed6\uff09\n4. \u8f93\u51fa\u4e00\u4efd\u7b80\u62a5\uff1a\u65b0\u589e\u6587\u4ef6\u6e05\u5355 + \u5206\u7c7b\u6458\u8981 + \u63d0\u9192\u8001\u7f2a\u662f\u5426\u6709\u7d27\u6025\u5f85\u5904\u7406\u7684\u6587\u6863\uff08\u5982\u4e34\u8fd1\u622a\u6b62\u65e5\u671f\u7684\u8bf7\u793a\u6216\u62a5\u544a\uff09\n\n\u6ce8\u610f\uff1a\u53ea\u5904\u7406\u6587\u6863\u7c7b\u6587\u4ef6\uff08.docx/.doc\uff09\uff0c\u5ffd\u7565 PPT \u548c\u5a92\u4f53\u6587\u4ef6\u3002\u8def\u5f84\u4f7f\u7528 /home/miao/\u5de5\u4f5c\u53f0\u8d26/\u3002",
       "skills": [
         "laomiao-writing-style",
         "markitdown"
@@ -505,5 +505,5 @@
       "profile": "wenan"
     }
   ],
-  "updated_at": "2026-06-09T08:10:47.056757+08:00"
+  "updated_at": "2026-06-10T08:10:23.004629+08:00"
 }

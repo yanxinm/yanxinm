@@ -35,3 +35,38 @@ ssh -L 8648:127.0.0.1:8648 miao@100.86.13.11
 ```
 
 SSH 通过 Tailscale 或直连 IP 建立，TCP keepalive 保证连接持续。浏览器访问 `http://127.0.0.1:8648`。
+
+## Funnel 多路径路由：顺序陷阱
+
+**核心规则：先设全部 serve 路径，最后启用 funnel。**
+
+### 错误顺序（导致路由被覆盖）
+
+```bash
+tailscale funnel --bg 9119                    # ✅ / → :9119, funnel on
+tailscale serve --bg --set-path /ha :8123     # ❌ 覆盖！funnel 被重置为 tailnet-only
+```
+
+`tailscale serve --bg --set-path` 会重写 serve 配置，**同时清掉 funnel 公开状态**，公网域名降级为 tailnet-only。
+
+### 正确顺序
+
+```bash
+# 1. 先清掉旧配置
+tailscale serve --https=443 off
+
+# 2. 设置所有路径（顺序无关）
+tailscale serve --bg --set-path / http://127.0.0.1:9119
+tailscale serve --bg --set-path /ha http://localhost:8123
+
+# 3. 最后一步：启用 funnel 公开
+tailscale funnel --bg 9119
+
+# 验证
+tailscale serve status   # 应显示 (Funnel on) + 所有路径
+```
+
+### 语法变更（v1.80+）
+
+- ❌ 旧：`tailscale funnel on` / `tailscale funnel off`
+- ✅ 新：`tailscale funnel --bg <port>` / `tailscale funnel --https=443 off`

@@ -11,3 +11,5 @@ User communicates via WeChat/Weixin (iLink). Prefers concise, direct responses w
 用户名：老缪 / yanxinm。系统用户 miao，home /home/miao。Hermes Agent 的 Gateway 回复里称呼他为"老缪"。
 §
 贵州行程更新：考虑放弃千户苗寨，新增织金洞+赤水丹霞。8天环线：贵阳→荔波小七孔→独山(响锅牛肉)→织金洞→黄果树→茅台→赤水丹霞→贵阳。仅Day3和Day8各4h车程，其余≤2.5h。
+§
+老缪（缪言信），南京报业文旅媒体人兼技术折腾者。家里智能家居生态以小米/米家为主（大量Yeelight/BLE开关、窗帘、洗碗机、电饭煲、小爱音箱、Home Hub、Linptech触屏开关），另有美的嵌入式一体机和追觅扫地机。家内网段192.168.1.0/24，网关192.168.1.1，WiFi SSID含'1804'。偏好我通过API/脚本代替页面操作，耐心且配合度高。安全注意：曾在截图中显露过美的密码——此后要注意提醒他保护密码。

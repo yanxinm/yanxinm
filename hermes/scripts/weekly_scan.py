@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """
-Weekly scan: check E:/百度云同步盘/工作台账 for new/modified files,
-convert to markdown, import to GBrain, and embed.
+每周台账扫描（基地版）：
+1. 从笔记本 Samba 共享同步文档到本地副本 ~/工作台账/
+2. 列出最近7天新增/修改的文档
+3. 输出摘要供后续 LLM 任务使用
 """
 import os
 import subprocess
@@ -9,73 +11,74 @@ import sys
 import time
 from pathlib import Path
 
-SRC = "/mnt/e/百度云同步盘/工作台账"
-DST = os.path.expanduser("~/brain_src/工作台账")
-CONVERT_SCRIPT = os.path.expanduser("~/brain_src/convert_docs.py")
-GBRAIN_DIR = os.path.expanduser("~/gbrain")
+LOCAL = os.path.expanduser("~/工作台账")
+SYNC_SCRIPT = os.path.expanduser("~/.hermes/scripts/sync_taizhang.sh")
+DAYS = 7
+
 
 def log(msg):
     print(f"[{time.strftime('%Y-%m-%d %H:%M')}] {msg}", flush=True)
 
-def main():
-    log("Starting weekly file scan...")
 
-    # Step 1: Run the conversion script for any new/changed files
-    if os.path.exists(CONVERT_SCRIPT):
-        log(f"Running conversion script: {CONVERT_SCRIPT}")
+def main():
+    log("=" * 50)
+    log("每周台账扫描开始")
+
+    # ===== Step 1: 同步 =====
+    if os.path.exists(SYNC_SCRIPT):
+        log("执行同步脚本...")
         result = subprocess.run(
-            [sys.executable, CONVERT_SCRIPT],
+            ["bash", SYNC_SCRIPT],
             capture_output=True, text=True, timeout=600
         )
+        print(result.stdout, flush=True)
         if result.returncode != 0:
-            log(f"Conversion errors:\n{result.stderr[-500:]}")
-        else:
-            log(f"Conversion output:\n{result.stdout[-300:]}")
+            log(f"同步出错 (exit={result.returncode}):\n{result.stderr[-300:]}")
+            # 不退出 — 本地副本可能已有历史数据，继续扫描
     else:
-        log(f"WARNING: Conversion script not found at {CONVERT_SCRIPT}")
+        log(f"同步脚本不存在: {SYNC_SCRIPT}，跳过同步，直接扫描本地副本")
 
-    # Step 2: Count new md files
-    md_count = 0
-    for year_dir in sorted(os.listdir(DST)):
-        year_path = os.path.join(DST, year_dir)
-        if os.path.isdir(year_path):
-            for root, _, files in os.walk(year_path):
-                md_count += len([f for f in files if f.endswith('.md')])
-    log(f"Total markdown files available: {md_count}")
+    # ===== Step 2: 扫描最近 N 天的新增/修改文件 =====
+    log(f"扫描 {LOCAL} 最近 {DAYS} 天内变动的文档...")
+    now = time.time()
+    cutoff = now - DAYS * 86400
 
-    # Step 3: Import to GBrain
-    log("Importing to GBrain...")
-    result = subprocess.run(
-        ["gbrain", "import", DST, "--no-embed"],
-        capture_output=True, text=True, timeout=600,
-        cwd=GBRAIN_DIR
-    )
-    if result.returncode != 0:
-        log(f"GBrain import errors:\n{result.stderr[-500:]}")
+    recent_files = []
+    if os.path.isdir(LOCAL):
+        for root, dirs, files in os.walk(LOCAL):
+            for f in files:
+                fpath = os.path.join(root, f)
+                try:
+                    mtime = os.path.getmtime(fpath)
+                    if mtime >= cutoff:
+                        rel = os.path.relpath(fpath, LOCAL)
+                        size_kb = os.path.getsize(fpath) / 1024
+                        recent_files.append((rel, size_kb, mtime))
+                except OSError:
+                    continue
+
+    # 按修改时间排序（最新在前）
+    recent_files.sort(key=lambda x: x[2], reverse=True)
+
+    # ===== Step 3: 输出摘要 =====
+    total_local = sum(1 for _ in Path(LOCAL).rglob("*") if _.is_file()) if os.path.isdir(LOCAL) else 0
+    log(f"本地副本总计: {total_local} 个文件")
+    log(f"近 {DAYS} 天变动: {len(recent_files)} 个文件")
+    print()
+
+    if recent_files:
+        for rel, size, mtime in recent_files[:50]:  # 最多展示50个
+            ts = time.strftime("%m-%d %H:%M", time.localtime(mtime))
+            print(f"  {ts}  {size:7.1f}KB  {rel}")
+        if len(recent_files) > 50:
+            print(f"  ... 以及其他 {len(recent_files) - 50} 个文件")
     else:
-        log(f"GBrain import:\n{result.stdout[-300:]}")
+        print("  （无最近变动的文件）")
 
-    # Step 4: Embed stale pages
-    log("Running gbrain embed --stale...")
-    result = subprocess.run(
-        ["gbrain", "embed", "--stale"],
-        capture_output=True, text=True, timeout=900,
-        cwd=GBRAIN_DIR
-    )
-    if result.returncode != 0:
-        log(f"GBrain embed errors:\n{result.stderr[-500:]}")
-    else:
-        log(f"GBrain embed:\n{result.stdout[-300:]}")
+    print()
+    log("每周台账扫描完成")
+    log("=" * 50)
 
-    # Step 5: Quick stats
-    result = subprocess.run(
-        ["gbrain", "stats"],
-        capture_output=True, text=True, timeout=30,
-        cwd=GBRAIN_DIR
-    )
-    log(f"GBrain stats:\n{result.stdout}")
-
-    log("Weekly scan completed.")
 
 if __name__ == "__main__":
     main()
