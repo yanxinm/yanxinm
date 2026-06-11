@@ -12,4 +12,8 @@ User communicates via WeChat/Weixin (iLink). Prefers concise, direct responses w
 §
 贵州行程更新：考虑放弃千户苗寨，新增织金洞+赤水丹霞。8天环线：贵阳→荔波小七孔→独山(响锅牛肉)→织金洞→黄果树→茅台→赤水丹霞→贵阳。仅Day3和Day8各4h车程，其余≤2.5h。
 §
-老缪（缪言信），南京报业文旅媒体人兼技术折腾者。家里智能家居生态以小米/米家为主（大量Yeelight/BLE开关、窗帘、洗碗机、电饭煲、小爱音箱、Home Hub、Linptech触屏开关），另有美的嵌入式一体机和追觅扫地机。家内网段192.168.1.0/24，网关192.168.1.1，WiFi SSID含'1804'。偏好我通过API/脚本代替页面操作，耐心且配合度高。安全注意：曾在截图中显露过美的密码——此后要注意提醒他保护密码。
+老缪（缪言信），南京报业文旅媒体人。双胞胎儿子。偏好简洁直接、根因修复不临时重启。Desktop 不稳定时用浏览器 Dashboard/Web UI 代替。远程方案：Funnel 公网为主，Tailscale 内网备选。单位防火墙拦 Tailscale/WebSocket，手机热点可绕过。
+§
+老缪华为Mate X5手机已装Tailscale，办公室WiFi是NJBY-Mac。他上班时间不在家（基地操作需回家），但手机可通过Tailscale远程访问HA。偏好通过浏览器直接访问HA，而非部分第三方App（鸿蒙版HA App不走VPN隧道）。家中WiFi：1804(2.4G)+1804-5G。追觅扫地机是X50 Ultra增强版(独立Dreamehome App非米家生态)，海尔有一体机和净水机。对技术有耐心，多次失败仍愿尝试不同方案。
+§
+老缪对反复出现的问题容忍度低，根因修复比临时重启重要。

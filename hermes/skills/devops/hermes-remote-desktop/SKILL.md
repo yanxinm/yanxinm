@@ -144,6 +144,35 @@ git config --global url."https://ghproxy.net/https://github.com/".insteadOf "htt
 
 如果需要同时保留 Web UI（Hermes Studio，8648端口）和远程 Desktop 访问：
 - Funnel 只能指一个端口
-- 选 Desktop 路线：Funnel → 9119（Dashboard），Web UI 仅本地访问
+- 选 Desktop 路线：Funnel → 9119（Dashboard），Web UI 仅本地/内网访问
 - 选 Web UI 路线：Funnel → 8648（Node SPA），Desktop 远程不可用
 - 高级方案：Nginx/Caddy 反代，按路径分流（`/api/*` → 9119，`/` → 8648）
+- 推荐方案：Funnel → Dashboard 9119，Web UI 通过 Tailscale IP 直连 `http://100.86.13.11:8648`
+
+## Desktop 失败时的回退方案
+
+当 Desktop 持续"提示词发送失败"或显示"Hermes couldn't start"时，按以下顺序排查：
+
+### 第1步：确认基地端是否正常
+
+通过微信让 H 检查：
+- Dashboard HTTP `200` + WebSocket `101` + 模型实发 `OK`
+- Gateway 所有平台在线
+
+### 第2步：用浏览器 Dashboard 聊天作为临时替代（立即可用）
+
+Desktop 后端地址（Funnel URL）的浏览器本身就是 Dashboard 的 Web 聊天界面。直接打开 Funnel 地址（如 `https://miao-thinkcentre-m710q-n080.tail589fe7.ts.net`），点左侧 "Chat" 即可打字发提示词。这是最快的临时替代方案，不需要安装任何东西。
+
+### 第3步：排查 Desktop 本地问题
+
+- Desktop 端后端地址改成 Tailscale 直连 `http://100.86.13.11:9119`（局域网内更稳）
+- 或手机热点测试确认单位防火墙是否拦截 WebSocket
+- 彻底退出 Desktop（托盘也退出），重开新建会话
+- 如果始终不行，卸载重装 Desktop 客户端
+
+### Web UI 后台"未连接"修复
+
+Web UI（8648）页面显示"未连接"但服务 active：
+1. 进程和端口正常时，重启 Web UI 即可恢复 bridge 连接
+2. 通过 `kill $(pgrep -f 'hermes-web-ui/dist/server')` 触发 systemd 自动重启（无需 sudo）
+3. 等 15-30 秒后刷新页面

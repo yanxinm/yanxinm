@@ -107,7 +107,9 @@ curl -s https://<ts-net域名>/api/status \
 | 开 UFW | `sudo ufw default deny incoming`<br>`sudo ufw allow ssh`<br>`sudo ufw allow from 100.64.0.0/10`<br>`sudo ufw enable` |
 | SSH 加固 | `sudo tee /etc/ssh/sshd_config.d/99-hardening.conf << 'EOF'`<br>`PasswordAuthentication no`<br>`PermitRootLogin no`<br>`MaxAuthTries 3`<br>`EOF`<br>`sudo systemctl restart sshd` |
 
-⚠️ 以上全部需要 **sudo 密码**。Agent terminal 无密码时命令会失败。解决方法：将密码写入 `~/.hermes/.env`（`SUDO_PASSWORD=<pw>`），Hermes terminal 工具自动读取。详见 `hermes-gateway-ops` 技能 §四-B「Headless sudo」。
+⚠️ 以上全部需要 **sudo 密码**。Agent terminal 无密码时命令会失败。有两种解法：
+1. **推荐**：配置 NOPASSWD 白名单（见本技能 §二-A）
+2. **备选**：将密码写入 `~/.hermes/.env`（`SUDO_PASSWORD=<pw>`），Hermes terminal 工具自动读取。详见 `hermes-gateway-ops` 技能 §四-B「Headless sudo」。
 
 ### Tailscale 网段
 `100.64.0.0/10` 是 Tailscale 的 CGNAT 地址空间，放行此段保证 Tailnet 内设备互通。
@@ -118,6 +120,47 @@ systemctl is-enabled unattended-upgrades  # 确认已启用
 ```
 
 ---
+
+## 二-A、远程 sudo 免密方案
+
+### 背景
+
+H 远程执行 `sudo` 命令时必须回家输入密码。以下方案让常用 sudo 命令免密，**一次配置永久解决**。
+
+### 推荐：NOPASSWD 白名单
+
+```bash
+# 在基地终端执行一次（替换 miao 为你的系统用户名）
+sudo visudo -f /etc/sudoers.d/hermes-agent
+```
+
+写入：
+
+```
+Cmnd_Alias HERMES_CMDS = /usr/bin/systemctl, /usr/bin/apt, /usr/bin/apt-get, /usr/bin/docker, /usr/bin/pkill, /usr/bin/kill, /usr/bin/ufw, /usr/bin/journalctl, /usr/sbin/reboot
+miao ALL=(ALL) NOPASSWD: HERMES_CMDS
+```
+
+配置后 H 可直接执行：
+
+| 命令 | 用途 |
+|------|------|
+| `sudo systemctl restart/stop/start/status` | 服务管理 |
+| `sudo apt install/update/remove` | 软件包管理 |
+| `sudo docker ...` | Docker 操作 |
+| `sudo ufw allow/deny` | 防火墙 |
+| `sudo journalctl -u xxx` | 查系统日志 |
+| `sudo reboot` | 重启 |
+
+**安全**：白名单只放行特定命令，不是 `ALL` 免密，`sudo bash`、`sudo rm -rf` 等高风险命令仍然需要密码。
+
+### 备选：密码写入 .env
+
+```bash
+echo 'SUDO_PASSWORD=*** >> ~/.hermes/.env
+```
+
+H 自动读取 `SUDO_PASSWORD` 环境变量。但不安全（明文存储），仅在无法配置 NOPASSWD 时使用。
 
 ## 三、Windows 客户端安装（国内环境）
 
@@ -212,11 +255,133 @@ hermes gateway restart
 - **HA 在 Funnel 后面需要反向代理信任配置**（`http: use_x_forwarded_for: true, trusted_proxies: - 127.0.0.1`），否则返回 400
 - **Funnel 子路径陷阱**：HA 不认子路径（如 `/ha`），需让 HA 占 Funnel 根路径 `/`，Hermes Dashboard 挪到 `/dash`。用 `tailscale funnel --bg --https=443 --set-path=/ <target>` 配置
 
+WebSocket JSON-RPC 端到端验证脚本：`references/ws-rpc-verify.py` — 模拟 Desktop 发送 `prompt.submit` 并验证模型返回。  
 详见 [`base-machine-ops`](../devops/base-machine-ops/SKILL.md) §七。
 
 ---
 
-## 七、服务管理速查
+## 七、Dashboard 稳定性排障
+
+### 核心问题：随机 Token 导致 Desktop 断连
+
+**根因链路**：`hermes-dashboard.service`（systemd enabled）→ 每次重启生成随机 `_SESSION_TOKEN` → Desktop 缓存的旧 token 无效 → WebSocket 连接后 `model.options` / `ready` 帧发送失败 → "提示词发送失败" / "网关断"
+
+**关键诊断命令**：
+```bash
+# 检查 token 是否固定
+python3 -c "
+import re,urllib.request
+f=open('/home/miao/.hermes/dashboard_session_token').read().strip()
+html=urllib.request.urlopen('http://127.0.0.1:9119/').read().decode()
+t=re.search(r\"__HERMES_SESSION_TOKEN__\s*=\s*['\\\"]([^'\\\"]+)\",html).group(1)
+print('matches_file:', t==f, '  html_len:', len(t), '  file_len:', len(f))
+"
+
+# 检查是否有 systemd 服务在抢端口
+systemctl is-active hermes-dashboard.service
+
+# 检查 Dashboard 进程的环境变量
+PID=$(ss -tlnp | awk -F'pid=' '/:9119/{split($2,a,\",\"); print a[1]; exit}')
+tr '\0' '\n' < /proc/$PID/environ 2>/dev/null | grep HERMES_DASHBOARD
+```
+
+### 修复步骤
+
+```bash
+# 1. 停用 systemd 服务（否则每次手动启动被抢占）
+sudo systemctl stop hermes-dashboard.service
+sudo systemctl disable hermes-dashboard.service
+
+# 2. 生成固定 token
+umask 077
+python3 -c "import secrets; print(secrets.token_urlsafe(32))" > ~/.hermes/dashboard_session_token
+chmod 600 ~/.hermes/dashboard_session_token
+
+# 3. 用固定 token 启动 Dashboard（需清空 9119 端口）
+PID=$(ss -tlnp | awk -F'pid=' '/:9119/{split($2,a,\",\"); print a[1]; exit}')
+[ -n "$PID" ] && kill -9 "$PID" 2>/dev/null
+sleep 2
+env HERMES_DASHBOARD_SESSION_TOKEN=*** ~/.hermes/dashboard_session_token)" \
+  ~/.hermes/hermes-agent/venv/bin/hermes dashboard --port 9119 --host 0.0.0.0 \
+  --insecure --no-open --skip-build &
+```
+
+### Watchdog 自恢复
+
+每分钟检查 Dashboard HTTP + WebSocket 健康，不通自动重启：
+- 脚本：`/home/miao/.hermes/scripts/dashboard_watchdog.sh`
+- crontab：`* * * * * /home/miao/.hermes/scripts/dashboard_watchdog.sh >/dev/null 2>&1`
+
+### WebSocket JSON-RPC 端到端验证
+
+不用打开 Desktop，在基地直接验证完整发送链路：
+
+```bash
+python3 ~/.hermes/skills/devops/hermes-base-operations/scripts/ws_rpc_probe.py
+```
+
+该脚本模拟 Desktop 的完整协议：`session.create` → `prompt.submit` → 接收 `gateway.ready` / `message.start` / `message.delta` / `message.complete` 事件流。成功返回模型回复即证明发送链路正常。
+
+**什么时候用**：Desktop 显示"提示词发送失败"但 Dashboard 200、WebSocket 101 都正常时。
+- 如果探针返回 `OK` → 问题在 Desktop 客户端本地缓存/版本/后端地址，不在基地
+- 如果探针失败 → 基地发送链路有问题，按本节其他步骤修复
+
+### 排障原则：重复失败 → 升级到根因
+
+**不要**在同一个修复模式（重启 Dashboard、检查端口、测 WebSocket 握手）上反复循环。
+当第三个修复尝试仍失败时，必须**升级分析层级**：
+1. 首次失败 → 重启服务
+2. 再次失败 → 查端口/进程/日志
+3. 第三次失败 → 查**为什么每次重启都治标不治本**（systemd 自动拉起？token 不一致？网关覆盖？）
+
+### 常见误判
+
+| 表面现象 | 可能根因 |
+|----------|----------|
+| Desktop "提示词发送失败" | 页面 token ≠ 进程 token |
+| Dashboard 显示 `200` 但 Desktop 发不出 | 随机 token 未被 Desktop 刷新 |
+| "网关断"但 Gateway 日志正常 | Desktop 侧 WS 通道用旧 token 连不上 |
+| watchdog 显示 unhealthy 但手动检查正常 | 多个 Dashboard 进程抢占 9119 |
+| 重启后恢复，几分钟后又断 | systemd 自动拉起新实例（随机 token 覆盖固定 token） |
+
+### 常见陷阱：Desktop 切换远程地址后报 "Hermes couldn't start"
+
+**症状**：在 Desktop 设置里把后端地址改成 Funnel 公网 URL，保存后重启，弹出 "Hermes couldn't start — Timed out connecting to Hermes backend after 15000ms"。
+
+**根因**：Desktop 安装时默认配置为"本地模式"，首次改远程地址后，Desktop 依然先在笔记本本地尝试启动 Hermes 后端。15 秒连不上后超时报错——**不一定是基地端有问题**。
+
+**处理顺序**：
+1. 先验证基地端 Dashboard 是否可达（浏览器打开 Funnel URL，看能否显示页面）
+2. 如果基地可达，点 "Use local gateway" 让 Desktop 本地跑通
+3. 跑通后进设置再次确认后端地址是否正确保存
+4. 完全退出 Desktop 重开
+
+**不要在 Desktop 报 "Hermes couldn't start" 时反复重启基地 Dashboard**——这是两个独立的故障域。
+
+### Funnel 切换：Dashboard ↔ Web UI
+
+Funnel 根路径目前指向 Dashboard（端口 9119）。如需改为 Web UI（端口 8648）：
+
+```bash
+# 查看当前 Funnel
+tailscale serve status
+
+# 切换根路径指向 Web UI
+sudo tailscale funnel --bg --https=443 http://127.0.0.1:8648
+
+# 如需同时保留 Dashboard，加子路径
+sudo tailscale serve --bg --https=443 /dash http://127.0.0.1:9119
+```
+
+结果：
+- `https://<node>.ts.net/` → Web UI（8648）
+- `https://<node>.ts.net/dash` → Dashboard（9119）
+
+**Web UI 限制**：不能在 Desktop 远程模式中作为后端使用（不转发 auth header），仅适合浏览器直接操作。
+
+---
+
+## 八、服务管理速查
 
 ```bash
 # Dashboard

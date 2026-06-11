@@ -1,13 +1,72 @@
 ---
 name: multi-profile-team
-description: 多角色 Hermes Profile 团队搭建——创建独立 profiles、注入 SOUL 人格、配置 Kanban 调度、设置 Cron 分工、编写路由规则。
+description: "Hermes 多角色团队全生命周期管理：从零搭建 + 新增成员 + 编写 SOUL.md + 配置路由 + 共享技能。覆盖初始创建和增量扩展两种场景。"
 category: devops
 tags: [profiles, multi-agent, kanban, routing, team, orchestration]
 ---
 
-# 多角色 Profile 团队架构
+ # 多角色 Profile 团队架构
 
-## 适用场景
+## ⚡ 新增：给已有团队加新成员的工作流
+
+
+## ⚡ 新增：给已有团队加新成员的工作流
+
+*参考文件: `references/soul-conventions.md`（SOUL 写作规范）, `references/team-roster.md`（全员花名册）*
+
+当用户说"给团队增加一个小伙伴"时，按以下步骤走：
+
+### Step 1: 取名
+选短小精悍的中文拼音，2-6个小写字母。参考：wenan, jike, lvyou, zhidu, sheji。
+
+### Step 2: 建目录
+```bash
+mkdir -p ~/.hermes/profiles/<name>/{skills,logs,sessions,home}
+```
+三个核心文件：`config.yaml`, `SOUL.md`, `.env`（可空）。
+
+### Step 3: 写 config.yaml
+从已有 profile 复制一份，改模型设置。如果是出图类 profile，需加 `fun-codex` provider：
+```yaml
+custom_providers:
+- api_key: sk-877...b8b8
+  base_url: https://slb.apikey.fun/v1
+  model: gpt-5.5
+  name: fun-codex
+```
+
+### Step 4: 写 SOUL.md（灵魂）
+每个 profile 的 SOUL.md 遵循统一结构：
+
+| 章节 | 用途 | 必填 |
+|---|---|---|
+| `# <称号> — 老缪的<角色>` | 角色名+代号 | ✅ |
+| 开头段 | "你是老缪（缪言信）的<角色>" | ✅ |
+| `## 你的定位` | 一句话职责 | ✅ |
+| `## 你的能力范围` | 能力列表 | ✅ |
+| `## 你的风格/信条/纪律` | 行为规则 | ✅ |
+
+SOUL 中应引用它需要加载的技能名（如 `apikey-image-gen`），这样后续 prompt 自动加载。
+
+### Step 5: 共享技能
+Skills 是 **per-profile** 的。新 profile 需要用的技能得手动复制：
+```bash
+cp -r ~/.hermes/profiles/jike/skills/apikey-image-gen ~/.hermes/profiles/<name>/skills/
+```
+
+### Step 6: 更新路由规则
+路由规则存 memory 里。用 `memory(action='replace')` 更新。
+
+### 常见坑
+
+| 坑 | 解 |
+|---|---|
+| 新 profile 用不了 image-gen | 没复制技能。skills 不跨 profile 共享。 |
+| `.env` 不存在 | `touch ~/.hermes/profiles/<name>/.env` |
+| 出图失败 → 缺 fun-codex provider | config.yaml 没加 custom_providers |
+| memory 满了加不进路由 | 先合并精简已有条目 |
+
+## 已有团队清单
 
 用户想把不同类别的工作分给专门的 AI 助手（如文案、极客、旅游规划师、制度写手），而不是所有任务都交给一个 agent。
 
@@ -120,6 +179,7 @@ cronjob(action='create',
 | jike | jike | 螺丝刀 | 极客：编程/运维/AI工具 | hermes-agent |
 | lvyou | lvyou | 路书 | 旅游：行程/记账/美食 | travel-itinerary |
 | zhidu | zhidu | 规尺 | 制度：管理/考核/安全制度 | laomiao-writing-style |
+| sheji | sheji | 画板 | 设计师：海报/修图/封面/视觉 | apikey-image-gen |
 
 ## 验证方法
 

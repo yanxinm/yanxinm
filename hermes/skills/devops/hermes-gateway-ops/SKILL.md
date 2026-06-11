@@ -302,19 +302,56 @@ Error: write EPIPE
 
 **常见原因（按频率排序）：**
 1. **iLink 隐式限流** — 短时间内发送多条长回复触发，但不在 Gateway 日志留下 `rate limited` 关键词（区别于 3.5 节显式限流）
-2. **iLink session 过期** — 令牌在 Gateway 端仍然有效但服务端已拒绝推送，连接的 WebSocket 被静默关闭（无 disconnect 日志）
+2. **iLink session 过期 / WebSocket 静默断开** — 令牌在 Gateway 端仍然有效但服务端已拒绝推送，连接的 WebSocket 被静默关闭（无 disconnect 日志）。这是最常见的形式：**Gateway 显示 connected，日志最后一条 inbound 停留在几分钟前，用户后续消息永远到不了**。
 3. **IPC socket 重建** — 参见 3.4 节 TDAI Gateway EPIPE 模式，Hermes Agent bridge 重启导致 TDAI Gateway 与 Hermes 的通信管道断裂
 
-**排查步骤：**
-1. 检查 `gateway_state.json` 中 `weixin.updated_at` 时间戳 — 如果停滞在数小时前，说明连接实际已死
-2. 检查 `gateway.log` 最后几条日志 — 是否有 Recent `inbound` 但无匹配的 `Sending response`
-3. 如果状态显示 connected 但用户确认收不到 → 直接 `hermes gateway run --replace` 重建所有平台连接
+**排查步骤（按可靠性排序）：**
+
+**方法 A（推荐 — 最可靠）：检查 gateway.log 最后 inbound 时间戳**
+```bash
+# 查看最后一条 WeChat 入站消息的时间
+grep "inbound from=o9cq801d" ~/.hermes/logs/gateway.log | tail -1
+
+# 查看最后一条已发送的响应
+grep "Sending response.*o9cq801d" ~/.hermes/logs/gateway.log | tail -1
+
+# 对比当前时间。如果最后 inbound 是几分钟前且没有新的，说明连接已死
+date '+%Y-%m-%d %H:%M:%S'
+```
+判定规则：
+- 最后 inbound < 30 秒前 → 连接正常
+- 最后 inbound > 2 分钟前 + Gateway 进程健康 + 用户确认发了消息 → 静默断开，必须重启
+- 最后 inbound > 2 分钟前 + Gateway 还在处理（日志有后续 activity） → 正常，只是用户没发新消息
+
+**方法 B（备选）：检查 gateway_state.json 的 weixin.updated_at**
+```bash
+cat ~/.hermes/gateway_state.json 2>/dev/null | python3 -m json.tool 2>/dev/null | grep -A2 weixin
+```
+⚠️ **陷阱：gateway_state.json 可能不存在**（Hermes 新版本会写入 state.db 而非 JSON 文件）。不存在时退回到方法 A。
+
+**方法 C：检查 Gateway 进程的日志文件描述符**
+```bash
+# 确认 Gateway 实际写日志的位置
+ls -la /proc/$(pgrep -f "hermes.*gateway.*run" | head -1)/fd/ 2>/dev/null | grep log
+```
+- 如果有 log FD → 知道日志文件路径
+- 如果 stdout/stderr 指向 socket（systemd 管理时常见） → 日志可能在 systemd journal 或 Web UI bridge 管理中
+
+**日志位置注意事项：**
+- **systemd 管理的 Gateway**（基地 M710q）：日志写入 `~/.hermes/logs/gateway.log`（默认 profile）
+- **profile 环境运行的 Gateway**（`hermes gateway run --profile xxx`）：日志写入 `~/.hermes/profiles/<profile>/logs/gateway.log`
+- 排查时先确认 Gateway 是用 systemd 启动的还是 profile 启动的。systemd 管理的版本**不会**向 profile-specific 日志写内容。
 
 **修复：**
 ```bash
-cd ~/Hermes-Agent && source venv/bin/activate && hermes gateway run --replace
+# 标准修复：重启 Gateway 重建所有平台连接
+# 方法 A — 利用 systemd 自动重启（推荐，无需 sudo kill 具体 PID）
+kill $(pgrep -f "hermes gateway run")
+sleep 20
+# 验证重连
+tail -5 ~/.hermes/logs/gateway.log | grep 'Gateway running with'
 ```
-等待 10-15 秒后验证 `gateway_state.json` 中所有平台 `updated_at` 更新为当前时间。
+等待 10-15 秒后验证日志中出现 `Gateway running with 3 platform(s)` 且 `weixin: connected`。
 
 
 **信号：** Gateway 日志显示 `Sending response (X chars) to o9cq801d...`，但用户收不到微信回复。
@@ -524,7 +561,7 @@ Hermes 的 terminal 工具自动读取。不要用 `echo password | sudo -S cmd`
 | **Node SPA 不转发认证头** | Funnel 指向 Node SPA（8648）时，`X-Hermes-Session-Token` 不会被转发到 Python Dashboard，即使 token 正确也返回 401。 | Funnel 必须直接指向 Python Dashboard（9119），绕过 Node SPA。详见 `references/hermes-desktop-remote-backend.md`。 |
 | **Dashboard Host header 拒绝** | Dashboard 绑定 `127.0.0.1` 时，Funnel 转发的 TS.net Host header 被 `host_header_middleware` 拒绝（400）。 | Dashboard 必须 `--host 0.0.0.0`。详见 `references/hermes-desktop-remote-backend.md`。 |
 | **Hermes Desktop 远程后端认证** | Desktop 远程模式需要 Session Token（非 API_SERVER_KEY），与 Web UI 的 API Key 认证不同。Token 每次 Dashboard 重启变化。 | 固化 `HERMES_DASHBOARD_SESSION_TOKEN` 到 `.env`，Desktop 配置 Token 模式。详见 `references/hermes-desktop-remote-backend.md`。 |
-| **Desktop 发送失败不能只测 200/101** | `Dashboard 200`、`/api/ws 101`、甚至 `model.options` 成功都只能证明部分链路；Desktop 仍可能在实际 `prompt.submit` 路径失败。 | 必须做 `/api/ws` JSON-RPC 端到端探针：`gateway.ready` → `session.create` → `prompt.submit` → `message.delta/complete`。若探针返回 `OK` 而 Desktop 失败，转向 Desktop 本地缓存/版本/后端地址。详见 `references/hermes-desktop-jsonrpc-e2e-probe.md`。 |
+| **Desktop 发送失败不能只测 200/101** — `Dashboard 200`、`/api/ws 101`、甚至 `model.options` 成功都只能证明部分链路；Desktop 仍可能在实际 `prompt.submit` 路径失败。必须做 `/api/ws` JSON-RPC 端到端探针：`gateway.ready` → `session.create` → `prompt.submit` → `message.delta/complete`。脚本见 `hermes-base-operations` §七。若探针返回 `OK` 而 Desktop 失败，转向 Desktop 本地缓存/版本/后端地址。 | 用 `python3 ~/.hermes/skills/devops/hermes-base-operations/scripts/ws_rpc_probe.py` |
 | **Tailscale Funnel 语法变更（v1.80+）** | 旧版 `tailscale funnel on` / `tailscale funnel off` 已废弃，新语法为 `tailscale funnel <port>` / `tailscale funnel --bg <port>`。 | 使用新语法。切端口：先 `tailscale funnel --https=443 off` 再 `tailscale funnel --bg <新端口>`。 |
 | **Funnel 多路径覆盖陷阱** | `tailscale serve --bg --set-path` 会重置 funnel 状态，公网降级为 tailnet-only。 | 先设所有 serve 路径，最后一步启用 funnel。详见 `references/tailscale-troubleshooting.md`。 |
 | **Hermes Desktop 国内安装** | Windows 国内安装需配 git/npm/electron/playwright 四个镜像，否则卡在 git fetch、npm install、Electron 下载等步骤。 | 先配置 `ghproxy.net`、`npmmirror.com`、`ELECTRON_MIRROR`、`PLAYWRIGHT_DOWNLOAD_HOST` 再安装。详见 `references/hermes-desktop-remote-backend.md`。 |

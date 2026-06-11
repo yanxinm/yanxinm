@@ -20,15 +20,15 @@
       "schedule_display": "30 8 * * *",
       "repeat": {
         "times": null,
-        "completed": 3
+        "completed": 4
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-06-06T16:17:49.052818+08:00",
-      "next_run_at": "2026-06-10T08:30:00+08:00",
-      "last_run_at": "2026-06-09T08:31:27.580542+08:00",
+      "next_run_at": "2026-06-11T08:30:00+08:00",
+      "last_run_at": "2026-06-10T08:37:01.638133+08:00",
       "last_status": "ok",
       "last_error": null,
       "last_delivery_error": null,
@@ -172,15 +172,15 @@
       "schedule_display": "10 8 * * *",
       "repeat": {
         "times": null,
-        "completed": 3
+        "completed": 4
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-06-06T16:17:51.326526+08:00",
-      "next_run_at": "2026-06-11T08:10:00+08:00",
-      "last_run_at": "2026-06-09T08:10:53.654540+08:00",
+      "next_run_at": "2026-06-12T08:10:00+08:00",
+      "last_run_at": "2026-06-10T08:10:29.678791+08:00",
       "last_status": "ok",
       "last_error": null,
       "last_delivery_error": null,
@@ -210,15 +210,15 @@
       "schedule_display": "0 9 * * *",
       "repeat": {
         "times": null,
-        "completed": 3
+        "completed": 4
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-06-06T16:17:51.896480+08:00",
-      "next_run_at": "2026-06-10T09:00:00+08:00",
-      "last_run_at": "2026-06-09T09:04:16.646043+08:00",
+      "next_run_at": "2026-06-11T09:00:00+08:00",
+      "last_run_at": "2026-06-10T09:00:45.445747+08:00",
       "last_status": "ok",
       "last_error": null,
       "last_delivery_error": null,
@@ -288,15 +288,15 @@
       "schedule_display": "every 2m",
       "repeat": {
         "times": null,
-        "completed": 1755
+        "completed": 2236
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-06-06T16:17:53.039117+08:00",
-      "next_run_at": "2026-06-10T08:10:23.054409+08:00",
-      "last_run_at": "2026-06-10T08:08:23.054409+08:00",
+      "next_run_at": "2026-06-11T08:12:44.823750+08:00",
+      "last_run_at": "2026-06-11T08:10:44.823750+08:00",
       "last_status": "ok",
       "last_error": null,
       "last_delivery_error": null,
@@ -326,18 +326,18 @@
       "schedule_display": "0 0,6,12,18 * * *",
       "repeat": {
         "times": null,
-        "completed": 15
+        "completed": 19
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-06-06T16:17:53.601004+08:00",
-      "next_run_at": "2026-06-10T12:00:00+08:00",
-      "last_run_at": "2026-06-10T06:00:22.012269+08:00",
+      "next_run_at": "2026-06-11T12:00:00+08:00",
+      "last_run_at": "2026-06-11T06:00:43.748321+08:00",
       "last_status": "ok",
       "last_error": null,
-      "last_delivery_error": null,
+      "last_delivery_error": "delivery error: Weixin send failed: iLink sendmessage rate limited; cooldown active for 30.0s",
       "deliver": "all",
       "origin": null,
       "enabled_toolsets": null,
@@ -505,5 +505,5 @@
       "profile": "wenan"
     }
   ],
-  "updated_at": "2026-06-10T08:10:23.004629+08:00"
+  "updated_at": "2026-06-11T08:10:44.823910+08:00"
 }

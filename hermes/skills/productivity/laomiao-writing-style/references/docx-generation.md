@@ -132,18 +132,55 @@ else:
     add_body(doc, line)                              # 仿宋正文
 ```
 
-## 4. 关键陷阱
+## 4. 基地字体环境
+
+基地已安装公文核心中文字体（Fandol + Noto CJK + cwTeX），并通过 fontconfig 设置了别名映射。
+
+### 字体别名映射表
+
+| docx 中使用的字体名 | 基地上实际渲染 | 用途 |
+|---|---|---|
+| 方正小标宋_GBK / 方正公文小标宋 | FandolSong Bold | 主标题 22pt |
+| 仿宋_GB2312 / 仿宋 | FandolFang Regular | 正文 16pt |
+| 黑体 / SimHei | FandolHei Bold | 一级标题 16pt |
+| 楷体_GB2312 / 楷体 | FandolKai Regular | 落款/标注 |
+| 宋体 / SimSun | FandolSong Regular | 表格/注释 |
+| 微软雅黑 / Microsoft YaHei | Noto Sans CJK SC | PPT/新媒体 |
+| Times New Roman | Liberation Serif | 英文数字 |
+| Arial | Liberation Sans | PPT 英文 |
+
+### 验证字体映射
+
+```bash
+fc-match "仿宋_GB2312"       # → FandolFang-Regular.otf
+fc-match "方正小标宋_GBK"    # → FandolSong-Bold.otf
+fc-match "黑体"              # → FandolHei-Bold.otf
+```
+
+### 字体文件位置
+
+| 来源 | 路径 |
+|---|---|
+| Fandol（仿宋/宋/黑/楷） | `/usr/local/share/fonts/Fandol*.otf` |
+| cwTeX（仿宋/黑/楷/明） | `/usr/share/fonts/truetype/cwtex/` |
+| Noto CJK 全家桶 | `/usr/share/fonts/opentype/noto/` |
+| 文泉驿 | `/usr/share/fonts/truetype/wqy/` |
+| fontconfig 别名配置 | `~/.config/fontconfig/fonts.conf` |
+
+> **注意**：Hermes 修改了 `$HOME`（到 `~/.hermes/profiles/jike/home/`），因此 fontconfig 配置文件需放在该路径下的 `.config/fontconfig/fonts.conf` 才能被加载。
+
+## 5. 关键陷阱
 
 | 陷阱 | 说明 |
 |------|------|
 | `first_line_indent` 属性名 | 是 `first_line_indent` 不是 `first_line_indent` |
-| 字体仅在 Office 中可见 | WSL 无中文字体，在 Windows 上打开才正确渲染 |
-| 方正小标宋可用性 | 部分系统用 `方正小标宋_GBK`，部分用 `方正小标宋简体`。如 Office 找不到会 fallback，不影响排版 |
+| 字体可在基地预览 | 2026年6月已安装中文字体，`fc-match` 可验证。生成后可在基地直接验证结构 |
+| 方正小标宋在 Windows 上 | Ethan 笔记本不一定自带此字体，.docx 在 Office 中会 fallback 到默认宋体。如需精确还原，需在 Ethan 上安装方正小标宋 |
 | `set(qn('w:eastAsia'), ...)` 必须 | 只在 `run.font.name` 设中文名不生效，需加 XML 属性 |
 | 行距最小 pt | `Pt(28)` 对应 28 磅固定行距。设置 `space_before/after` 为 0 避免额外间距 |
 | 页边距单位 | `Cm()` 是厘米，不用 Cm 时默认单位是 EMU |
 
-## 5. 验证方法
+## 6. 验证方法
 
 ```python
 from markitdown import MarkItDown

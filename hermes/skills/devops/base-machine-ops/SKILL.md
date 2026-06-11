@@ -17,7 +17,7 @@ M710q Ubuntu 基地（`miao-thinkcentre-m710q-n080`）的远程访问、网络�
 
 ## Home Assistant on the base
 
-When operating the base-machine Home Assistant Docker stack, use `references/home-assistant-docker-ops.md`. It captures the HA Docker/compose shape, API proxy pattern, Bluetooth/AppArmor fix (`privileged: true` + D-Bus mount), HA token/auth pitfalls, and config-flow inspection commands.
+When operating the base-machine Home Assistant Docker stack, use the following reference. HA Docker/compose shape, API proxy pattern, Bluetooth/AppArmor fix (`privileged: true` + D-Bus mount), HA token/auth pitfalls, and config-flow inspection commands.
 
 ---
 
@@ -451,6 +451,52 @@ HA/智能家居集成排障经验见 [`references/home-assistant-ops.md`](refere
 
 ---
 
+## 七、Home Assistant（Docker）运维
+
+HA v2026.6.1 跑在 Docker 里（ghcr.io/home-assistant/home-assistant:stable），docker-compose 在 /home/miao/docker/ha/。host 网络 + privileged（蓝牙）。
+
+### 7.1 容器管理
+
+```bash
+cd /home/miao/docker/ha
+sudo docker compose restart homeassistant   # 重启（~20s）
+sudo docker compose down                    # 停+删
+sudo docker compose up -d                   # 启动
+```
+
+### 7.2 HA API Proxy
+
+ha_proxy.py 监听 0.0.0.0:8080，转发 8123，自动注入长期访问令牌。cron @reboot 自启。
+
+```bash
+cd /home/miao && python3 ha_proxy.py &
+curl http://localhost:8080/api/            # {"message":"API running."}
+curl http://100.86.13.11:8080/api/         # Tailscale
+```
+
+### 7.3 长期访问令牌
+
+HA 2026 的长期令牌是 JWT。需在 .storage/auth 插入 token_type:long_lived_access_token 的 refresh_token（含 token、jwt_key 字段），用 jwt_key 签发 JWT(payload:iss,iat,exp)。令牌在 ~/.ha_token（600），10年有效。HA密码 ha2026!。
+
+### 7.4 HA 关键端口/地址
+
+| 端口 | 服务 |
+|------|------|
+| 8123 | HA Web UI（yanxinm/ha2026!） |
+| 8080 | HA API Proxy（自动注入令牌） |
+
+HA 网页 http://192.168.1.42:8123 ，API Proxy http://100.86.13.11:8080/api/
+
+### 7.5 HA 自定义集成兼容修补
+
+Midea AC LAN v0.3.22 在 HA 2026.6 上因 homeassistant.const 常量删除而无法加载配置流。修补要点：
+- midea_devices.py：删除 TIME_DAYS/TIME_HOURS 等已移除常量导入，改为本地定义
+- config_flow.py：登录表单 server 选项改用字符串键 "1"/"2"/"3"/"4"，提交时转 int
+
+Dreame Vacuum 插件链式导入 map.py → py_mini_racer。若编译失败，用空桩模块绕过：`echo "class MiniRacer:..." > /usr/local/lib/python3.14/site-packages/py_mini_racer.py`
+
+---
+
 ## 八、Windows Desktop 安装（国内环境）
 
 ## 八、Home Assistant 基础运维
@@ -498,6 +544,96 @@ git config --global --list | findstr ghproxy
 如果 `%PLAYWRIGHT_DOWNLOAD_HOST%` 输出为空，说明还在旧窗口——关掉重开一个 cmd 再验证。
 
 如果遇到 `EBUSY` 文件锁（杀毒软件锁 electron），删 `node_modules` 重试；还不行就**重启电脑**最快。如果 `build failed` 持续出现，**Web UI（浏览器打开 Funnel URL）是完整替代方案**。
+
+---
+
+## 八、字体管理
+
+基地已预装公文排版和 PPT 常用中文字体，并通过 fontconfig 设置了 Windows 字体名到 Linux 字体的别名映射。
+
+### 已安装字体
+
+| 来源 | 许可 | 包含 |
+|------|------|------|
+| Fandol（CTAN） | GPL v2+ | 仿宋/宋体(Regular+Bold)/黑体(Regular+Bold)/楷体 |
+| cwTeX | GPL | 仿宋體/粗黑體/楷書/明體 |
+| Noto CJK Extra | SIL OFL | 思源黑体+宋体 全字重（Thin→Black） |
+| 文泉驿 | GPL | 微米黑/正黑/等宽 |
+
+### 验证别名映射
+
+```bash
+fc-match "仿宋_GB2312"      # → FandolFang-Regular.otf
+fc-match "方正小标宋_GBK"    # → FandolSong-Bold.otf
+fc-match "黑体"              # → FandolHei-Bold.otf
+fc-match "微软雅黑"          # → Noto Sans CJK SC Regular
+fc-match "Times New Roman"   # → Liberation Serif Regular
+```
+
+### 添加新字体
+
+```bash
+# 用户字体目录
+mkdir -p ~/.local/share/fonts/
+cp *.ttf *.otf ~/.local/share/fonts/
+fc-cache -fv
+
+# 系统字体目录（需要 sudo）
+sudo cp *.otf /usr/local/share/fonts/
+sudo fc-cache -fv
+```
+
+### fontconfig 配置路径
+
+⚠️ **Hermes 修改了 `$HOME`**，实际 HOME 为 `/home/miao/.hermes/profiles/jike/home/`。fontconfig 用户配置文件 `~/.config/fontconfig/fonts.conf` 必须放在此路径下才能被加载。
+
+也可使用系统级路径 `/etc/fonts/conf.d/99-*.conf`（需 sudo）。
+
+---
+
+## 八、字体管理
+
+基地已预装公文排版和 PPT 常用中文字体，并通过 fontconfig 设置了 Windows 字体名到 Linux 字体的别名映射。
+
+### 已安装字体
+
+| 来源 | 许可 | 包含 |
+|------|------|------|
+| Fandol（CTAN） | GPL v2+ | 仿宋/宋体(Regular+Bold)/黑体(Regular+Bold)/楷体 |
+| cwTeX | GPL | 仿宋體/粗黑體/楷書/明體 |
+| Noto CJK Extra | SIL OFL | 思源黑体+宋体 全字重（Thin→Black） |
+| 文泉驿 | GPL | 微米黑/正黑/等宽 |
+
+### 别名映射（`~/.config/fontconfig/fonts.conf`）
+
+```bash
+# 验证映射
+fc-match "仿宋_GB2312"      # → FandolFang-Regular.otf
+fc-match "方正小标宋_GBK"    # → FandolSong-Bold.otf
+fc-match "黑体"              # → FandolHei-Bold.otf
+fc-match "微软雅黑"          # → Noto Sans CJK SC Regular
+fc-match "Times New Roman"   # → Liberation Serif Regular
+```
+
+### 添加新字体
+
+```bash
+# 用户字体目录
+mkdir -p ~/.local/share/fonts/
+cp *.ttf *.otf ~/.local/share/fonts/
+fc-cache -fv
+
+# 系统字体目录（需要 sudo）
+sudo cp *.otf /usr/local/share/fonts/
+sudo fc-cache -fv
+```
+
+### 字体别名配置
+
+配置路径：`$HOME/.config/fontconfig/fonts.conf`
+（⚠️ Hermes 修改了 `$HOME`，实际路径为 `/home/miao/.hermes/profiles/jike/home/.config/fontconfig/fonts.conf`）
+
+或在系统级目录：`/etc/fonts/conf.d/99-*.conf`（需要 sudo）
 
 ---
 
