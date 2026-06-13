@@ -180,7 +180,25 @@ fc-match "黑体"              # → FandolHei-Bold.otf
 | 行距最小 pt | `Pt(28)` 对应 28 磅固定行距。设置 `space_before/after` 为 0 避免额外间距 |
 | 页边距单位 | `Cm()` 是厘米，不用 Cm 时默认单位是 EMU |
 
-## 6. 验证方法
+## 6. 一键转换脚本（推荐）
+
+对于已有完整 Markdown 内容的公文，使用技能目录下的转换脚本可直接生成排版正确的 .docx：
+
+```bash
+python3 scripts/convert-markdown-to-gov-docx.py 输入文件.md  [输出文件.docx]
+```
+
+该脚本：
+- 自动识别 `#` / `##` / `###` 标题层级 → 对应黑体/楷体
+- 将 Markdown 表格转为带边框的 Word 表格
+- `**加粗**` 文本保留加粗
+- `*数据来源*` 行设为五号斜体
+- 代码块（```）转为五号仿宋
+- 遵循 GB/T 9704-2012 页边距（上3.7 下3.5 左2.8 右2.6cm）
+
+适用于：考核方案、意识形态报告、月度工作报告、请示等已写好 Markdown 初稿的公文。
+
+## 7. 验证方法
 
 ```python
 from markitdown import MarkItDown

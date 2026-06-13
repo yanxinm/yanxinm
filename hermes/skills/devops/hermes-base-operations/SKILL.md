@@ -381,6 +381,62 @@ sudo tailscale serve --bg --https=443 /dash http://127.0.0.1:9119
 
 ---
 
+## 七之补充：Cron 定时任务投递排障
+
+### 问题模式：任务执行成功但微信收不到
+
+**症状**：用户反馈「没收到全链路自检/灾备报告/待办事项等定时任务的完成信息」，但任务本身实际已执行。
+
+### 诊断流程（按顺序）
+
+| 步骤 | 命令/操作 | 看什么 |
+|------|-----------|--------|
+| 1. 查任务状态 | `cronjob(action='list')` | 看 `last_run_at`（执行时间）和 `last_delivery_error`（投递错误） |
+| 2. 确认投递失败 | 查 `last_delivery_error` 字段 | `delivery error: Weixin send failed: iLink sendmessage rate limited; cooldown active for 30.0s` |
+| 3. 查日志确认执行 | `grep <job_id> ~/.hermes/logs/gateway.log ~/.hermes/logs/agent.log` | 区分「任务没跑」和「跑了但投递失败」 |
+| 4. 跑健康检查 | `bash ~/.hermes/scripts/hermes-health-check.sh` | 确认系统实际状态正常 |
+| 5. 确认入站正常 | 给用户发消息看能否回复 | 入站正常 = iLink 连接没断，只是出站被限 |
+
+### iLink 单向速率限制特征
+
+| 特征 | 说明 |
+|------|------|
+| **入站** | ✅ 用户发消息正常，能收到并回复 |
+| **出站（实时对话）** | ✅ 对话中的回复正常投递 |
+| **出站（Cron 定时任务）** | ❌ 返回 `iLink sendmessage rate limited; cooldown active for 30.0s` |
+| **持续时间** | 可能持续数小时不自动恢复 |
+
+这表明 iLink（微信桥接软件）对**自动化出站消息**有独立的速率限制，与实时对话的投递通道不同。
+
+### 错误日志特征
+
+```
+ERROR gateway.platforms.weixin: [Weixin] send failed to=o9cq801d: iLink sendmessage rate limited; cooldown active for 30.0s
+WARNING cron.scheduler: Job '<job_id>': live adapter send to weixin:... failed (...), falling back to standalone
+ERROR cron.scheduler: Job '<job_id>': delivery error: Weixin send failed: iLink sendmessage rate limited; cooldown active for 30.0s
+```
+
+注意：错误日志中会先尝试 `live adapter`（实时通道），失败后回退到 `standalone`（独立投递），两者都失败。
+
+### 修复方案
+
+| 方案 | 操作 | 适合场景 |
+|------|------|----------|
+| **减频** | 调低 cron 推送频率（如把每6小时自检改为每天一次汇总） | 推送太多触发了 iLink 限制 |
+| **换通道** | 把关键告警改为飞书（`deliver: feishu`）投递 | 飞书无此限制 |
+| **重启 iLink** | 重启 Gateway（`hermes gateway restart`）有时可重置限流状态 | 试探性恢复 |
+| **等恢复** | 什么都不做，等待 iLink 限流窗口过期 | 如果限流是临时的 |
+
+### 主动投递纪律
+
+当用户询问「为啥没收到报告」时：
+
+1. **不要只解释原因**——补上缺失的报告内容（手动跑健康检查/备份检查/待办扫描）
+2. **用表格呈现**哪些任务执行成功但投递失败，让用户一目了然
+3. **给出修复选项**让用户决策，不要坐等指示
+
+---
+
 ## 八、服务管理速查
 
 ```bash

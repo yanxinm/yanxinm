@@ -170,6 +170,46 @@ cronjob(action='create',
 
 总负责通过 `terminal(command="<profile> chat -q '...' -s <skill>")` 调用专项 profile。
 
+### 复杂任务路由：delegate_task 模式
+
+当任务需要多步骤分析（扫描文件夹、读取大量文件、跨文件数据分析、生成结构化文档），单次 `chat -q` 不够用。改用 `delegate_task` 注入 profile 人格 + 全工具集：
+
+```python
+# 总负责（default）中调用 zhitu 执行复杂分析
+delegate_task(
+  goal="你的分析目标",
+  context=f'''
+你是老缪的{profile_name}（角色人格注入）。
+文件清单：...（列出所有文件路径及说明）
+分析要求：
+1. 读方案文件了解框架
+2. 用 Python (openpyxl/xlrd) 读取 xlsx 提取数据
+3. 用 antiword/catdoc/markitdown 读取 doc/docx
+4. 找规律 → 输出方案
+''',
+  toolsets=["terminal", "file", "web"]
+)
+```
+
+**适用场景**：
+- 分析类任务（财务数据挖掘、绩效规律提取、制度起草）
+- 需要读取 10+ 文件的批量分析
+- 需要 Python 做数据处理和回归
+
+**对比 `chat -q`**：
+
+| 维度 | `terminal("<profile> chat -q")` | `delegate_task` + 人格注入 |
+|------|------|------|
+| 工具 | 仅 terminal | terminal + file + web + vision |
+| 文件读取上限 | 依赖单次上下文 | 可循环读取几十个文件 |
+| 数据分析 | 手动描述数据 | Python 写脚本读 xlsx |
+| 输出格式 | 文字回复 | 可 write_file 输出文档 |
+
+**坑**：
+- 子 agent 没有 user memory（个人偏好/历史记录），context 须写完整
+- 子 agent 的 summary 是自述，对外部副作用（文件写入）要核实：`read_file` 确认文件存在再汇报
+- 结果语言须在 context 中指定（默认英文），老缪团队任务一律 `context` 里写明"输出中文"
+
 ## 已落地团队（老缪专用）
 
 | Profile | 别名 | 代号 | 职责 | 核心 Skill |

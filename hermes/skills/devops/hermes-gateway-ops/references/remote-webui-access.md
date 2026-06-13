@@ -181,3 +181,31 @@ tail -5 ~/.hermes/logs/gateway.log | grep -E 'weixin|feishu' | grep -i connect
 - 不要在公网直接暴露 8642 端口（无 HTTPS）
 - 远程访问建议走 VPN（Tailscale 自动加密隧道）
 - Tailscale 安装时 Hermes 无法代替用户 sudo，需用户手动执行认证步骤
+
+## 已知坑：重启后 0.0.0.0 配置丢失
+
+**症状：** 已正确设为 `0.0.0.0`，系统重启或 systemd 重启 Gateway 后回退到 `127.0.0.1`。`ss -tlnp | grep 8642` 显示 `127.0.0.1:8642` 而非 `0.0.0.0:8642`。笔记本通过 Tailscale IP 访问 `health` 端点超时，Dashboard 显示「网关启动失败」。
+
+**根因：** 未完全确定。可能原因包括 config 版本迁移（_config_version 升级时丢失自定义字段）或 systemd 环境变量覆盖。
+
+**修复：**
+```bash
+# 1. 确认当前绑定
+ss -tlnp | grep 8642  # 若显示 127.0.0.1 则需修复
+
+# 2. 重新设置（务必指定 -p default）
+hermes -p default config set platforms.api_server.extra.host 0.0.0.0
+
+# 3. 确认写入正确文件
+hermes -p default config path  # 应为 ~/.hermes/config.yaml，不是 profiles/jike/config.yaml
+grep -r '0.0.0.0' ~/.hermes/config.yaml  # 确认值存在
+
+# 4. 重启 Gateway
+kill $(pgrep -f "hermes gateway run")  # systemd 自动拉起
+
+# 5. 验证
+ss -tlnp | grep 8642  # 必须显示 0.0.0.0:8642
+curl -s http://100.86.13.11:8642/health  # 必须返回 200
+```
+
+**预防：** 建议在自检脚本中增加端口绑定地址检测——不仅检查端口是否监听，还要检查绑定的是 `0.0.0.0` 还是 `127.0.0.1`。

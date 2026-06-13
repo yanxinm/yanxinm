@@ -3,7 +3,7 @@ agent:
   api_max_retries: 3
   clarify_timeout: 600
   disabled_toolsets: []
-  environment_hint: ''
+  environment_hint: ""
   environment_probe: true
   gateway_auto_continue_freshness: 3600
   gateway_notify_interval: 180
@@ -13,85 +13,85 @@ agent:
   max_turns: 90
   reasoning_effort: xhigh
   restart_drain_timeout: 180
-  service_tier: ''
+  service_tier: ""
   task_completion_guidance: true
   tool_use_enforcement: true
 approvals:
-  cron_mode: deny
+  cron_mode: allow
   destructive_slash_confirm: true
   mcp_reload_confirm: true
   mode: smart
   timeout: 60
 auxiliary:
   approval:
-    api_key: ''
-    base_url: ''
+    api_key: ""
+    base_url: ""
     extra_body: {}
-    model: ''
+    model: ""
     provider: auto
     timeout: 30
   compression:
-    api_key: ''
-    base_url: ''
+    api_key: ""
+    base_url: ""
     extra_body: {}
-    model: ''
+    model: ""
     provider: auto
     timeout: 120
   curator:
-    api_key: ''
-    base_url: ''
+    api_key: ""
+    base_url: ""
     extra_body: {}
-    model: ''
+    model: ""
     provider: auto
     timeout: 600
   kanban_decomposer:
-    api_key: ''
-    base_url: ''
+    api_key: ""
+    base_url: ""
     extra_body: {}
-    model: ''
+    model: ""
     provider: auto
     timeout: 180
   mcp:
-    api_key: ''
-    base_url: ''
+    api_key: ""
+    base_url: ""
     extra_body: {}
-    model: ''
+    model: ""
     provider: auto
     timeout: 30
   profile_describer:
-    api_key: ''
-    base_url: ''
+    api_key: ""
+    base_url: ""
     extra_body: {}
-    model: ''
+    model: ""
     provider: auto
     timeout: 60
   session_search:
-    api_key: ''
-    base_url: ''
+    api_key: ""
+    base_url: ""
     extra_body: {}
     max_concurrency: 3
-    model: ''
+    model: ""
     provider: auto
     timeout: 30
   skills_hub:
-    api_key: ''
-    base_url: ''
+    api_key: ""
+    base_url: ""
     extra_body: {}
-    model: ''
+    model: ""
     provider: auto
     timeout: 30
   title_generation:
-    api_key: ''
-    base_url: ''
+    api_key: ""
+    base_url: ""
     extra_body: {}
-    model: ''
+    model: ""
     provider: auto
     timeout: 30
   triage_specifier:
-    api_key: ''
-    base_url: ''
+    api_key: ""
+    base_url: ""
     extra_body: {}
-    model: ''
+    model: ""
     provider: auto
     timeout: 120
   vision:
@@ -103,10 +103,10 @@ auxiliary:
     provider: custom:Ark.cn-beijing.volces.com
     timeout: 120
   web_extract:
-    api_key: ''
-    base_url: ''
+    api_key: ""
+    base_url: ""
     extra_body: {}
-    model: ''
+    model: ""
     provider: auto
     timeout: 360
 bedrock:
@@ -115,11 +115,11 @@ bedrock:
     provider_filter: []
     refresh_interval: 3600
   guardrail:
-    guardrail_identifier: ''
-    guardrail_version: ''
+    guardrail_identifier: ""
+    guardrail_version: ""
     stream_processing_mode: async
     trace: disabled
-  region: ''
+  region: ""
 browser:
   allow_private_urls: false
   auto_local_for_private_urls: true
@@ -128,9 +128,9 @@ browser:
     loopback_host_alias: host.docker.internal
     managed_persistence: false
     rewrite_loopback_urls: false
-    session_key: ''
-    user_id: ''
-  cdp_url: ''
+    session_key: ""
+    user_id: ""
+  cdp_url: ""
   command_timeout: 30
   dialog_policy: must_respond
   dialog_timeout_s: 300
@@ -149,20 +149,20 @@ checkpoints:
 code_execution:
   mode: project
 command_allowlist:
-- stop/restart hermes gateway (kills running agents)
-- overwrite system file via tee
-- git reset --hard (destroys uncommitted changes)
-- recursive delete
-- overwrite system file via redirection
-- hermes update (restarts gateway, kills running agents)
-- delete in root path
-- sudo with combined-flag privilege escalation
-- overwrite project env/config via redirection
-- script execution via -e/-c flag
-- script execution via heredoc
-- stop/restart system service
-- pipe remote content to shell
-- shell command via -c/-lc flag
+  - stop/restart hermes gateway (kills running agents)
+  - overwrite system file via tee
+  - git reset --hard (destroys uncommitted changes)
+  - recursive delete
+  - overwrite system file via redirection
+  - hermes update (restarts gateway, kills running agents)
+  - delete in root path
+  - sudo with combined-flag privilege escalation
+  - overwrite project env/config via redirection
+  - script execution via -e/-c flag
+  - script execution via heredoc
+  - stop/restart system service
+  - pipe remote content to shell
+  - shell command via -c/-lc flag
 compression:
   abort_on_summary_failure: false
   codex_gpt55_autoraise: true
@@ -189,75 +189,79 @@ curator:
   prune_builtins: true
   stale_after_days: 30
 custom_providers:
-- api_key: ark-fe29f5ba-4906-4294-9393-1f8665d33d8b-0ca44
-  base_url: https://ark.cn-beijing.volces.com/api/v3
-  model: doubao-seed-2-0-pro-260215
-  name: Ark.cn-beijing.volces.com
-- api_key: sk-87739841b0d96ef1d705bce4de5f900e0e97248843a6aebc1b581f8510d5b8b8
-  base_url: https://slb.apikey.fun/v1
-  model: gpt-5.5
-  name: apikey-fun
-- api_key: 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
-  base_url: https://integrate.api.nvidia.com/v1
-  model: meta/llama-3.1-8b-instruct
-  name: minimax
-- api_key: sk-87739841b0d96ef1d705bce4de5f900e0e97248843a6aebc1b581f8510d5b8b8
-  api_mode: codex_responses
-  base_url: https://slb.apikey.fun/v1
-  model: gpt-5.5
-  name: fun-codex
+  - api_key: ark-fe29f5ba-4906-4294-9393-1f8665d33d8b-0ca44
+    base_url: https://ark.cn-beijing.volces.com/api/v3
+    model: doubao-seed-2-0-pro-260215
+    name: Ark.cn-beijing.volces.com
+  - api_key: sk-87739841b0d96ef1d705bce4de5f900e0e97248843a6aebc1b581f8510d5b8b8
+    base_url: https://slb.apikey.fun/v1
+    model: gpt-5.5
+    name: apikey-fun
+  - api_key: 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
+    base_url: https://integrate.api.nvidia.com/v1
+    model: meta/llama-3.1-8b-instruct
+    name: minimax
+  - api_key: sk-87739841b0d96ef1d705bce4de5f900e0e97248843a6aebc1b581f8510d5b8b8
+    api_mode: codex_responses
+    base_url: https://slb.apikey.fun/v1
+    model: gpt-5.5
+    name: fun-codex
+  - api_key: sk-KNKWeHKtHaYUlCZFLAug1ssqenuISZbFDkbenlxeFO2IJ5yY
+    base_url: https://apihub.agnes-ai.com/v1
+    model: agnes-2.0-flash
+    name: agnes-ai
 dashboard:
   basic_auth:
-    password: ''
-    password_hash: ''
-    secret: ''
-    session_ttl_seconds: 0
-    username: ''
+    password: "485078"
+    password_hash: ""
+    secret: desktop-remote-2026
+    session_ttl_seconds: 86400
+    username: yanxinm
   oauth:
-    client_id: ''
-    portal_url: ''
-  public_url: ''
+    client_id: ""
+    portal_url: ""
+  public_url: ""
   show_token_analytics: false
   theme: cyberpunk
 delegation:
-  api_key: ''
-  api_mode: ''
-  base_url: ''
+  api_key: ""
+  api_mode: ""
+  base_url: ""
   child_timeout_seconds: 600
   inherit_mcp_toolsets: true
   max_concurrent_children: 3
   max_iterations: 50
   max_spawn_depth: 1
-  model: ''
+  model: ""
   orchestrator_enabled: true
-  provider: ''
-  reasoning_effort: ''
+  provider: ""
+  reasoning_effort: ""
   subagent_auto_approve: false
 discord:
   allow_any_attachment: false
-  allowed_channels: ''
+  allowed_channels: ""
   auto_thread: true
   channel_prompts: {}
-  dm_role_auth_guild: ''
-  free_response_channels: ''
+  dm_role_auth_guild: ""
+  free_response_channels: ""
   history_backfill: true
   history_backfill_limit: 50
   max_attachment_bytes: 33554432
   reactions: true
   require_mention: true
-  server_actions: ''
+  server_actions: ""
   thread_require_mention: false
   voice_fx:
     ack_enabled: true
     ack_phrases:
-    - Let me look into that.
-    - One moment.
-    - Checking on that now.
-    - Give me a sec.
-    - On it.
+      - Let me look into that.
+      - One moment.
+      - Checking on that now.
+      - Give me a sec.
+      - On it.
     ambient_enabled: true
     ambient_gain: 0.18
-    ambient_path: ''
+    ambient_path: ""
     duck_gain: 0.06
     enabled: false
     speech_gain: 1
@@ -290,9 +294,9 @@ display:
   runtime_footer:
     enabled: false
     fields:
-    - model
-    - context_pct
-    - cwd
+      - model
+      - context_pct
+      - cwd
   show_cost: false
   show_reasoning: false
   skin: default
@@ -324,22 +328,22 @@ hooks_auto_accept: false
 human_delay:
   max_ms: 2500
   min_ms: 800
-  mode: 'off'
+  mode: "off"
 kanban:
   auto_decompose: true
   auto_decompose_per_tick: 3
-  default_assignee: ''
+  default_assignee: ""
   dispatch_in_gateway: true
   dispatch_interval_seconds: 60
   dispatch_stale_timeout_seconds: 14400
   failure_limit: 2
   max_in_progress_per_profile: null
-  orchestrator_profile: ''
+  orchestrator_profile: ""
   worker_log_backup_count: 1
   worker_log_rotate_bytes: 2097152
 known_plugin_toolsets:
   cli:
-  - spotify
+    - spotify
 logging:
   backup_count: 3
   level: INFO
@@ -351,20 +355,20 @@ lsp:
   wait_mode: document
   wait_timeout: 5
 matrix:
-  allowed_rooms: ''
-  free_response_rooms: ''
+  allowed_rooms: ""
+  free_response_rooms: ""
   require_mention: true
 mattermost:
-  allowed_channels: ''
+  allowed_channels: ""
   channel_prompts: {}
-  free_response_channels: ''
+  free_response_channels: ""
   require_mention: true
 max_concurrent_sessions: null
 mcp_servers:
   chrome-devtools:
     args:
-    - -y
-    - chrome-devtools-mcp@latest
+      - "-y"
+      - chrome-devtools-mcp@latest
     command: npx
     timeout: 120
   hermes-studio:
@@ -373,12 +377,12 @@ mcp_servers:
     env:
       HERMES_WEBUI_STATE_DIR: /home/miao/.hermes-web-ui
       HERMES_WEB_UI_HOME: /home/miao/.hermes-web-ui
-      HERMES_WEB_UI_MANAGED_MCP: '1'
+      HERMES_WEB_UI_MANAGED_MCP: "1"
       HERMES_WEB_UI_URL: http://127.0.0.1:8648
   prompt-optimizer:
     args:
-    - -y
-    - prompt-optimizer-mcp
+      - "-y"
+      - prompt-optimizer-mcp
     command: npx
     timeout: 60
 memory:
@@ -388,8 +392,7 @@ memory:
   user_char_limit: 1375
   user_profile_enabled: true
 model:
-  base_url: ''
-  default: deepseek-v4-flash
+  default: deepseek-v4-pro
   provider: deepseek
 model_catalog:
   enabled: true
@@ -413,29 +416,35 @@ paste_collapse_threshold_fallback: 5
 personalities: {}
 platform_toolsets:
   cli:
-  - browser
-  - clarify
-  - code_execution
-  - computer_use
-  - cronjob
-  - delegation
-  - file
-  - image_gen
-  - memory
-  - messaging
-  - session_search
-  - skills
-  - terminal
-  - todo
-  - tts
-  - vision
-  - web
+    - browser
+    - clarify
+    - code_execution
+    - computer_use
+    - cronjob
+    - delegation
+    - file
+    - image_gen
+    - memory
+    - messaging
+    - session_search
+    - skills
+    - terminal
+    - todo
+    - tts
+    - vision
+    - web
+platforms:
+  api_server:
+    extra:
+      host: 0.0.0.0
+      port: 8642
+    key: hermes-fix-2026
 plugins:
   disabled: []
   enabled:
-  - disk-cleanup
-  - memtensor
-prefill_messages_file: ''
+    - disk-cleanup
+    - memtensor
+prefill_messages_file: ""
 privacy:
   redact_pii: true
 prompt_caching:
@@ -449,8 +458,8 @@ secrets:
     cache_ttl_seconds: 300
     enabled: false
     override_existing: true
-    project_id: ''
-    server_url: ''
+    project_id: ""
+    server_url: ""
 security:
   acked_advisories: []
   allow_lazy_installs: true
@@ -481,13 +490,13 @@ skills:
   inline_shell_timeout: 10
   template_vars: true
 slack:
-  allowed_channels: ''
+  allowed_channels: ""
   channel_prompts: {}
-  free_response_channels: ''
+  free_response_channels: ""
   require_mention: true
 streaming:
   buffer_threshold: 24
-  cursor: " \u2589"
+  cursor: " ▉"
   edit_interval: 0.8
   enabled: false
   fresh_final_after_seconds: 60
@@ -495,12 +504,12 @@ streaming:
 stt:
   elevenlabs:
     diarize: false
-    language_code: ''
+    language_code: ""
     model_id: scribe_v2
     tag_audio_events: false
   enabled: true
   local:
-    language: ''
+    language: ""
     model: base
   mistral:
     model: voxtral-mini-latest
@@ -508,7 +517,7 @@ stt:
     model: whisper-1
   provider: local
 telegram:
-  allowed_chats: ''
+  allowed_chats: ""
   channel_prompts: {}
   reactions: false
 terminal:
@@ -535,7 +544,7 @@ terminal:
   singularity_image: docker://nikolaik/python-nodejs:python3.11-nodejs20
   timeout: 180
   vercel_runtime: node24
-timezone: ''
+timezone: ""
 tool_loop_guardrails:
   hard_stop_after:
     exact_failure: 5
@@ -558,7 +567,7 @@ tools:
     search_default_limit: 5
     threshold_pct: 10
 toolsets:
-- hermes-cli
+  - hermes-cli
 tts:
   edge:
     voice: en-US-AriaNeural
@@ -571,8 +580,8 @@ tts:
   neutts:
     device: cpu
     model: neuphonic/neutts-air-q4-gguf
-    ref_audio: ''
-    ref_text: ''
+    ref_audio: ""
+    ref_text: ""
   openai:
     model: gpt-4o-mini-tts
     voice: alloy
@@ -596,9 +605,9 @@ voice:
   silence_duration: 3
   silence_threshold: 200
 web:
-  backend: ''
-  extract_backend: ''
-  search_backend: ''
+  backend: ""
+  extract_backend: ""
+  search_backend: ""
 whatsapp: {}
 x_search:
   model: grok-4.20-reasoning

@@ -17,3 +17,5 @@ User communicates via WeChat/Weixin (iLink). Prefers concise, direct responses w
 老缪华为Mate X5手机已装Tailscale，办公室WiFi是NJBY-Mac。他上班时间不在家（基地操作需回家），但手机可通过Tailscale远程访问HA。偏好通过浏览器直接访问HA，而非部分第三方App（鸿蒙版HA App不走VPN隧道）。家中WiFi：1804(2.4G)+1804-5G。追觅扫地机是X50 Ultra增强版(独立Dreamehome App非米家生态)，海尔有一体机和净水机。对技术有耐心，多次失败仍愿尝试不同方案。
 §
 老缪对反复出现的问题容忍度低，根因修复比临时重启重要。
+§
+工作方式偏好：分步骤交付，不要一次性给完整方案。先从具体模块（如工作量绩效逻辑）梳理清楚，给了看反馈再往下走。大而全的文档容易偏离需求，小步迭代更高效。

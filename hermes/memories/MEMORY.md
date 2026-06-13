@@ -1,8 +1,6 @@
 文档管线：笔记本 Ethan(100.86.148.56) E:\百度云同步盘\工作台账\ → 基地 ~/工作台账/（3726份2.49GB不含PPT）。周末SSH+rsync同步（Tailscale DERP中继TCP双向不通，需直连）。脚本：sync_taizhang.sh + weekly_scan.py。笔记本已装OpenSSH Server、免密密钥待配。
 §
-用户原则（6条）：1.隐私保护。2.事实核查—全网搜索不编创。3.文件操作限工作台账目录（基地本地副本 /home/miao/工作台账/，源在笔记本 E:\百度云同步盘\工作台账\）。4.自主执行者+思考伙伴，不等命令。5.正确时大胆反对，拿出证据。6.主动提醒长期未推的工作、主动改进不好用的材料。
-§
-用户明确要求：长时间运行的任务必须定期主动汇报进度，任务完成后必须主动输出验证结果，不能等用户来问。安静不报=失职。
+用户原则：1.隐私保护 2.事实核查不编创 3.文件操作限 /home/miao/工作台账/ 4.自主执行不等命令 5.正确时反对拿证据 6.主动提醒未推工作。+长任务主动汇报、完成后主动验证，安静=失职。
 §
 Dashboard WebSocket 反复断的根因：systemd 服务 `/etc/systemd/system/hermes-dashboard.service` 以随机 token 启动，与固定 token 文件不一致导致 Desktop 发送失败。修法：`sudo systemctl stop/disable hermes-dashboard.service`，再手动 `HERMES_DASHBOARD_SESSION_TOKEN=... hermes dashboard --port 9119`。watchdog 脚本在 `~/.hermes/scripts/dashboard_watchdog.sh` 每分钟检测自恢复。
 §
@@ -14,6 +12,8 @@ html-video (nexu-io) 已部署在基地 /home/miao/html-video/，22 模板，Hyp
 §
 搜索默认用 AnySearch（~/.hermes/skills/anysearch/，v2.1.0）。CLI：python3 ~/.hermes/skills/anysearch/scripts/anysearch_cli.py search "query" -m N。支持 search/batch_search/extract/get_sub_domains。匿名模式可用，不再用其他搜索方式。
 §
-待办回家后操作：`sudo visudo -f /etc/sudoers.d/hermes-agent` → 写入 `miao ALL=(ALL) NOPASSWD: /usr/bin/systemctl, /usr/bin/apt, /usr/bin/apt-get, /usr/bin/docker, /usr/bin/pkill, /usr/bin/kill`。让 H 可以免密执行 sudo 操作。
+iLink微信出站单向限流，cron执行成功但微信投递失败。解决方案：每日待办(09:00)→微信；全链路自检(00:00/12:00)→飞书；每日灾备(08:10)→飞书；每日简报(08:30)→飞书。飞书无此限流。
 §
 HA备忘：Dreame X50 Ultra增强版用Dreamehome App独立云(非米家生态)，无miio/第三方/现成HA集成。haier国内版需client_id+refresh_token，海外hon(Andre0512/hon)支持账号密码直登含烤箱/净水。WiFi双频：1804-5G(基地)、1804(IoT)。鸿蒙HA原生App。
+§
+GitHub git协议（SSH/HTTPS）全被墙，仅HTTP可达。ghproxy.net已配git代理但smart HTTP仍断。灾备脚本走本地tar兜底(~/.hermes/scripts/hermes_backup.sh)。Chrome 149装于~/apps/chrome/，headless正常，Hermes browser工具已启用。SSH key已生成未加GitHub。

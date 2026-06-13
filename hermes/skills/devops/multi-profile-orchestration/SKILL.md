@@ -146,6 +146,9 @@ hermes kanban init
 | Profile skills 未同步 | `--clone` 复制了 skills，但后续更新不同步。关键技能考虑 symlink |
 | Cron 未用正确的 profile | 用 `profile='wenan'` 参数指定，否则走 default |
 | 多个 cron 同日触发冲突 | 错开时间（9:00, 9:30 等），避免同时大量 API 调用 |
+| **Web UI 群聊里 profile 不说话** | Web UI 的「群聊」功能不是多人在线聊天。只有 default profile 的 Gateway 在运行，其他 profile（jike/lvyou/sheji/wenan/zhidu）Gateway 均为 stopped——它们没有"耳朵"，群里说话不会自动回应。正确用法：对 default（赫妹）说话，赫妹根据关键词分析后通过 `terminal(command="<profile> chat -q '...'")` 调用对应 profile，汇总返回。群聊功能在当前架构下意义不大，推荐直接用路由模式。 |
+| **Cron 任务静默失败：`cron_mode: deny`** | `--clone` 创建的 profile 默认带有 `approvals.cron_mode: deny`，定时任务执行到需要审批的命令（terminal/write_file 等）时直接被拒绝，任务悄悄挂掉，`hermes cron list` 不显示任何错误。**创建 profile 后必须改：** `sed -i 's/cron_mode: deny/cron_mode: allow/' ~/.hermes/profiles/<name>/config.yaml`。同时检查 default profile：`grep cron_mode ~/.hermes/config.yaml`。 |
+| **API Server 绑定回退到 127.0.0.1** | Gateway 的 API Server 绑定地址由 default profile 的 `platforms.api_server.extra.host` 决定。如果 default config.yaml 中缺少该配置段（`--clone` 不会同步此段，`hermes config set` 可能写到其他 profile），Gateway 回退到 `127.0.0.1`，导致 Tailscale/远程 Web UI 无法连接。**验证：** `grep -A5 '^platforms:' ~/.hermes/config.yaml | grep api_server`，确保存在 `platforms.api_server.extra.host: 0.0.0.0`。修复后需重启 Gateway。 |
 
 ## 验证 Checklist
 
