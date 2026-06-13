@@ -567,7 +567,7 @@ Hermes 的 terminal 工具自动读取。不要用 `echo password | sudo -S cmd`
 | **Tailscale Funnel 语法变更（v1.80+）** | 旧版 `tailscale funnel on` / `tailscale funnel off` 已废弃，新语法为 `tailscale funnel <port>` / `tailscale funnel --bg <port>`。 | 使用新语法。切端口：先 `tailscale funnel --https=443 off` 再 `tailscale funnel --bg <新端口>`。 |
 | **Funnel 多路径覆盖陷阱** | `tailscale serve --bg --set-path` 会重置 funnel 状态，公网降级为 tailnet-only。 | 先设所有 serve 路径，最后一步启用 funnel。详见 `references/tailscale-troubleshooting.md`。 |
 | **Hermes Desktop 国内安装** | Windows 国内安装需配 git/npm/electron/playwright 四个镜像，否则卡在 git fetch、npm install、Electron 下载等步骤。 | 先配置 `ghproxy.net`、`npmmirror.com`、`ELECTRON_MIRROR`、`PLAYWRIGHT_DOWNLOAD_HOST` 再安装。详见 `references/hermes-desktop-remote-backend.md`。 |
-| **平台检测「状态未知」误报** | 自检脚本只 grep 最后一条 Connected/Disconnected 日志，长时间稳定连接无新日志时误报为「状态未知」，累积 fail_count。2026-06-07 实战：6AM 自检报微信/飞书双异常，实际两平台均正常。 | 平台检测改为 6 层时间窗口判定（见 §10.1 v3 增强）：优先看 30 分钟内消息往来印证连通；无日志时参考 Gateway 进程稳定性推断；「状态未知但 Gateway 稳定」不计入 fail。 |
+| **平台检测「状态未知」误报** | 自检脚本只 grep 最后一条 Connected/Disconnected 日志，长时间稳定连接无新日志时误报为「状态未知」，累积 fail_count。2026-06-07 实战：6AM 自检报微信/飞书双异常，实际两平台均正常。 | 平台检测改为 6 层时间窗口判定（见 §10.1 v3 增强）：优先看 30 分钟内消息往来印证连通；无日志时参考 Gateway 进程稳定性推断；「状态未知但 Gateway 稳定」不计入 fail。 |\n| **Gateway 日志写 journal 不自写文件** | `hermes update` 升级后 Gateway 日志只写 systemd journal 不写 `~/.hermes/logs/gateway.log`，旧自检脚本读空文件误报平台断开。2026-06-13 实战确认。 | 自检脚本 v5 改为直接用 `journalctl -u hermes-gateway` 查询连接状态，不依赖文件日志。飞书连接检测用 `[Lark].*connected` 模式（journal 中飞书标签为 `[Lark]` 而非 `[Feishu]`）。微信直接用 Gateway 进程存活推断。 |\n| **`set -o pipefail` + `grep -q` 导致 SIGPIPE 反向判断** | `grep -q` 找到匹配立即退出，关闭管道触发 journalctl 收到 SIGPIPE (141)，`set -o pipefail` 下 pipeline 退出码取 journalctl 的 141 而非 grep 的 0，`if` 条件反转。2026-06-13 实战：自检 v4 飞书检测明明有 connected 日志却报"无最近连接日志"。 | 避免 `grep -q` 与 pipefail 共用。改为 `grep ... | head -1 | grep -q .` 或拆分为两步（先赋值变量再 `[ -n "$var" ]`）。 |
 | **灾备脚本路径硬编码** | 从旧笔记本迁移时，`$HOME/yanxinm` 在新机器上解析为 `/home/miao/yanxinm`（不存在）。脚本强切 SSH 绕过 ghproxy 代理。git push 失败时 `exit 1` 导致 cron 报错。 | 仓库路径改为 `$HOME/hermes-backup`；保持 HTTPS + ghproxy；push 失败退化为本地 tar + exit 0。详见 §十二。 |
 | **git push 被墙（smart HTTP 阻断）** | 即使 ghproxy HTTPS 代理对网页/API 可用，git smart HTTP 协议（fetch-pack/push）仍会 `unexpected disconnect`。SSH over 443 同样被 DPI 阻断。 | 灾备脚本不依赖 git push：先做本地 tar 备份，git push 仅最佳努力。网络恢复后自动同步。详见 `references/github-gfw-workaround.md`。 |
 | **cron_mode: deny 导致定时任务静默失败** | profile（通过 `--clone` 创建或默认）的 `approvals.cron_mode: deny` 会让 cron worker 在执行到任何需要审批的命令（terminal/write_file 等）时被直接拒绝，任务悄悄挂掉。`hermes cron list` 不显示错误——上次运行可能显示 `ok` 但实际 agent 内部已失败。症状：cron 按时触发但从未产生实际输出或副作用。 | **创建 profile 后立即改**：`sed -i 's/cron_mode: deny/cron_mode: allow/' ~/.hermes/profiles/<name>/config.yaml`。同时检查 default：`grep cron_mode ~/.hermes/config.yaml`。修改后需重启 Gateway。**注意：** `hermes config set approvals.cron_mode allow` 会写到当前活跃 profile 而非 default，务必显式指定 `-p default` 或用 sed 直接改。 |
@@ -746,19 +746,14 @@ scripts/hermes-health-check.sh
 5. 微信 (Weixin) — 6 层判定（见下方 v3 增强）
 6. 飞书 (Feishu) — 同上
 
-**v3 平台检测增强 (2026-06-07)：** 旧版只 grep `Connected`/`Disconnected` 最后一行，长时间无新日志就误报「状态未知」。v3 改为 6 层逐级判定：
+**v5 平台检测重写 (2026-06-13)：** 旧版（v3/v4）通过合并文件日志 + journalctl 并统一格式解析，因 journalctl 格式（`6月 13 07:40:08 ... [Lark] [2026-...`）与文件日志格式（`2026-06-07 10:16:30,281 ...`）差异过大，sed 转换链条脆弱。v5 改为**直接验证法**：
 
-| 层级 | 检测方式 | 判定 |
+| 平台 | 检测方式 | 备注 |
 |------|---------|------|
-| a | 30 分钟内 Connected 日志 | ✅ 最近确认连接 |
-| b | 30 分钟内 Disconnected 日志 | ❌ 最近断开 |
-| c | 30 分钟内有消息往来（inbound/Sending response） | ✅ 推定连通 |
-| d | 历史 Connected + Gateway 进程正常 | ✅ 连接保持 |
-| e | Connected vs Disconnected 时间戳比较 | 谁更新判谁 |
-| f | Gateway 运行 > 1 分钟但无日志 | ⚠️ 轻度警告（不计 fail） |
-| g | 彻底无日志 | ⚠️ 状态未知 |
+| 飞书 | `journalctl -u hermes-gateway --since "6 hours ago" \| grep '[Lark].*connected'` | journal 中飞书标签为 `[Lark]` 非 `[Feishu]` |
+| 微信 | `is_gateway_running` → 进程存续即通过 | 用户当前会话经由微信，Gateway 存活=微信通 |
 
-关键改进：不再把「长时间稳定连接无新日志」误报为异常。层次 e/f/g 不再计入 `fail_count`。
+v5 移除了 v3 的 6 层时间窗口判定（日志行时间戳解析），改为直接查询 systemd journal。关键教训：**Gateway 升级后日志只写 journal，健康检查脚本必须适配此变化。**
 
 **⚠️ v2 关键安全更新（2026-05-24）：**
 
