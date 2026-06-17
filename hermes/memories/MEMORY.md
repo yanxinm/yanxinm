@@ -6,14 +6,14 @@ Dashboard WebSocket 反复断的根因：systemd 服务 `/etc/systemd/system/her
 §
 html-video (nexu-io) 已部署在基地 /home/miao/html-video/，22 模板，Hyperframes 引擎，Hermes Agent 驱动。Studio 端口 3071（已 patch 为 0.0.0.0），通过 Tailscale http://100.86.13.11:3071 远程访问。启动命令：export PATH="/home/miao/.hermes/node/bin:$PATH" && cd /home/miao/html-video && node packages/cli/dist/bin.js studio --port 3071。pnpm 在 /home/miao/.hermes/node/bin/pnpm。
 §
-多角色AI团队：default=我(总负责)；wenan=文案；jike=极客；lvyou=旅游；zhidu=制度；sheji=设计师(海报/修图/视觉)出图→/home/miao/出图/。路由：wenan←报告/方案/公文；lvyou←行程/旅游/美食；jike←脚本/代码/运维；zhidu←制度/考核；sheji←海报/设计/修图/封面/视觉。Cron：台账扫描周一9:00(wenan)、月报25日9:00(wenan)、意识形态季末25日9:00(wenan)
+多角色AI团队：default=我(总负责)；wenan=文案；jike=极客；lvyou=旅游；zhidu=制度；sheji=设计师(海报/修图/视觉)出图→/home/miao/出图/。路由：wenan←报告/公文；lvyou←行程/美食；jike←脚本/运维；zhidu←制度/考核；sheji←设计/修图。
 §
-贵州自驾v4(2026.06.08定):7.18-25一家三口南京⇌贵阳。环线:贵阳→安顺→黄果树(西门三核心)→织金洞→乌蒙草原→遵义→茅台→赤水(2晚深度)→贵阳。Day4最长3.5h。~1350km,人均3100-5000元。预约:黄果树7.19西门/织金洞7.20/遵义会址7.21。偏好:1大床+1双床≥1.35m,新酒店优先,不推狗肉,先紧后松。HTML:/home/miao/贵州自驾游-v4.html
+贵州自驾v4(7.18-25):一家三口南京⇌贵阳环线(织金洞+赤水丹霞+黄果树+乌蒙+茅台+遵义),~1350km,人均3100-5000。偏好1大床+1双床≥1.35m,新酒店优先。HTML:/home/miao/贵州自驾游-v4.html
 §
 搜索默认用 AnySearch（~/.hermes/skills/anysearch/，v2.1.0）。CLI：python3 ~/.hermes/skills/anysearch/scripts/anysearch_cli.py search "query" -m N。支持 search/batch_search/extract/get_sub_domains。匿名模式可用，不再用其他搜索方式。
 §
-iLink微信出站单向限流，cron执行成功但微信投递失败。解决方案：每日待办(09:00)→微信；全链路自检(00:00/12:00)→飞书；每日灾备(08:10)→飞书；每日简报(08:30)→飞书。飞书无此限流。
+Cron投递已切回微信(不飞书): 每日简报/灾备/全链路自检→微信。jike的零点自检+简报→微信。Tailscale确认为远程方案(UU远程被否)。笔记本通过100.86.13.11访问基地WebUI(:8648)和API(:8642)。HA在基地Docker运行(:8123)，dreame_vacuum已修复(auth_key刷新+config注入绕过MQTT超时)。
 §
-HA备忘：Dreame X50 Ultra增强版用Dreamehome App独立云(非米家生态)，无miio/第三方/现成HA集成。haier国内版需client_id+refresh_token，海外hon(Andre0512/hon)支持账号密码直登含烤箱/净水。WiFi双频：1804-5G(基地)、1804(IoT)。鸿蒙HA原生App。
+GitHub全墙(SSH/HTTPS git不可用,仅HTTP)。灾备走本地tar(~/.hermes/scripts/hermes_backup.sh)。Codex CLI用apikey.fun+echobird(:53682)，bwrap需apparmor_restrict_unprivileged_userns=0。Chrome 149 ~/apps/chrome/ headless正常。SSH key已生成未加GitHub。
 §
-GitHub git协议（SSH/HTTPS）全被墙，仅HTTP可达。ghproxy.net已配git代理但smart HTTP仍断。灾备脚本走本地tar兜底(~/.hermes/scripts/hermes_backup.sh)。Chrome 149装于~/apps/chrome/，headless正常，Hermes browser工具已启用。SSH key已生成未加GitHub。
+智能家居自动路由：无论当前profile，老缪在微信/飞书发家居指令时直接执行。识别词：温度/湿度/空气质量、扫地/机器人/回充/清扫、窗帘/开关/打开关闭、灯/灯光、空调/制冷/制热、家电状态。全部走HA API(localhost:8123,token→~/.ha_token)。dreame扫地机用dreame_vacuum集成(Dreamehome云)。

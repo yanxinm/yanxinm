@@ -124,13 +124,65 @@ find /usr/share/icons -name "*<app>*"
 
 For more techniques (favicon HTML scraping, ICO extraction, SVG fallback), see `references/icon-extraction.md`.
 
-## 3. Video Player Setup
+## 3. Video Player Setup (Full Codec Coverage)
+
+Install VLC (GUI player with own codec library) + mpv (lightweight ffmpeg-based) + all restricted codecs for near-universal format support.
 
 ```bash
-sudo apt install mpv -y   # H.264/AAC/HEVC all supported via ffmpeg
+# Full install (Ubuntu 22.04+/24.04)
+sudo apt update && sudo apt install -y \
+  vlc \
+  mpv \
+  ubuntu-restricted-extras \
+  gstreamer1.0-plugins-bad \
+  gstreamer1.0-plugins-ugly \
+  gstreamer1.0-libav \
+  libdvd-pkg
+
+# Enable encrypted DVD playback
+sudo dpkg-reconfigure libdvd-pkg
 ```
 
-Usage: `mpv <file>` or `yt-dlp -o - <url> | mpv -` for streaming.
+### What each package provides
+
+| Package | Role |
+|---------|------|
+| `vlc` | GUI player with self-contained codec library (independent of system ffmpeg) |
+| `mpv` | Lightweight player using system ffmpeg — broader format compatibility |
+| `ubuntu-restricted-extras` | MP3, DVD, Flash, Microsoft fonts |
+| `gstreamer1.0-plugins-bad` | Additional codecs (MPEG-2, AAC, etc.) |
+| `gstreamer1.0-plugins-ugly` | Patent-encumbered codecs |
+| `gstreamer1.0-libav` | GStreamer ↔ ffmpeg bridge |
+| `libdvd-pkg` | libdvdcss for encrypted DVD playback |
+
+### Verification
+
+```bash
+vlc --version          # should show 3.0.x
+mpv --version          # should show 0.37+
+ffmpeg -decoders | wc -l   # expect 500+
+ffmpeg -formats | grep -E 'mp4|mkv|hevc|av1'  # key formats present
+```
+
+### Why both VLC and mpv?
+
+- **VLC**: Best GUI, self-contained codecs, good for remote desktop use and casual playback
+- **mpv**: Uses system ffmpeg (547+ decoders), broader edge-case compatibility, CLI-friendly
+- Together they cover virtually all video/audio formats — if one fails, the other usually works
+
+### Usage
+
+```bash
+vlc <file>                      # GUI playback
+mpv <file>                      # CLI/lightweight playback
+mpv --vo=gpu --hwdec=auto <file>  # Hardware-accelerated playback
+```
+
+### Pitfalls
+
+- **MS Core Fonts license prompt**: `ubuntu-restricted-extras` triggers a debconf EULA dialog for Microsoft fonts during install. In non-interactive terminals, this silently fails with "user did not accept the license" — fonts won't be installed but video codecs install fine. To accept later: `sudo dpkg-reconfigure ttf-mscorefonts-installer`.
+- **Apt mirror 403**: If a configured mirror (e.g., Tsinghua) returns 403 for certain suites, switch to `http://cn.archive.ubuntu.com/ubuntu/` in `/etc/apt/sources.list.d/ubuntu.sources`.
+- **libdvd-pkg needs manual reconfigure**: The package builds libdvdcss from source at reconfigure time — not during install. Always run `sudo dpkg-reconfigure libdvd-pkg` after install.
 
 ## Pitfalls
 

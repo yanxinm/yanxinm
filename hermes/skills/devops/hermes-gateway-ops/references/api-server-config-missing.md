@@ -1,90 +1,83 @@
-# API Server 配置丢失诊断（2026-06-11 实战）
+# API Server 0.0.0.0 配置丢失/回退诊断
 
 ## 症状
 
+- `ss -tlnp` 显示 `127.0.0.1:8642` 而非 `0.0.0.0:8642`
+- 笔记本 Tailscale IP 访问 `http://100.x.x.x:8642/health` 超时
 - Dashboard 显示"网关启动失败"
-- `ss -tlnp | grep 8642` 显示 `127.0.0.1:8642`（应该是 `0.0.0.0:8642`）
-- 笔记本 Tailscale IP `http://100.x.x.x:8642/health` 超时
-- 微信/飞书正常（Gateway 本身在跑，只是 API Server 绑定错误）
+- Web UI 能打开但 API 不通
 
-## 诊断路径
+## 诊断步骤
 
 ```bash
-# 1. 查端口绑定
+# 1. 确认当前绑定
 ss -tlnp | grep 8642
-# 输出: 127.0.0.1:8642 → 绑定错误，应该是 0.0.0.0
+# 期望: 0.0.0.0:8642
+# 实际: 127.0.0.1:8642 ← 问题
 
-# 2. 查当前活跃 profile（关键！）
+# 2. 检查哪个 profile 在用
 hermes config path
-# 输出: /home/miao/.hermes/profiles/jike/config.yaml
-# → 活跃 profile 不是 default！
+# 输出当前活跃 profile 的 config.yaml 路径
 
-# 3. 查 default config 中 api_server 配置
-grep -n 'api_server' /home/miao/.hermes/config.yaml
-# 无输出 → 配置段完全缺失
+# 3. 检查 default profile 是否有 api_server 段
+grep -A5 'api_server' ~/.hermes/config.yaml
+# 如果没有输出 → 完全缺失！
 
-# 4. 查其他 profile 的 config 作为参考
-grep -A6 '^platforms:' /home/miao/.hermes/profiles/jike/config.yaml
-# 有正确的 api_server 配置模板
+# 4. 检查其他 profile
+grep -A5 'api_server' ~/.hermes/profiles/*/config.yaml
+# 可能发现只有 jike/profile 有配置
 ```
 
-## 根因链
+## 根因
 
+两种可能：
+
+### A. `hermes config set` 写到错误 profile
+```bash
+# 当前活跃 profile = jike
+hermes config set platforms.api_server.extra.host 0.0.0.0
+# 写入 ~/.hermes/profiles/jike/config.yaml ❌
+
+# Gateway 读取的是 ~/.hermes/config.yaml（default）
+# → default 中无 api_server 配置 → 回退到 127.0.0.1
 ```
-活跃 profile = jike（通过 dashboard --open-profile jike 设置）
-    ↓
-hermes config set → 写入 jike 的 config.yaml
-    ↓
-Gateway 读的是 default config.yaml
-    ↓
-default config 中 platforms.api_server 段完全不存在
-    ↓
-Gateway 回退到默认值 127.0.0.1
-```
 
-## 修复
-
-### 方法 A：用 hermes config set（需指定 profile）
-
+修复：
 ```bash
 hermes -p default config set platforms.api_server.extra.host 0.0.0.0
-hermes -p default config set platforms.api_server.extra.port 8642
 ```
 
-⚠️ 但如果 `platforms:` 段本身不存在，config set 可能不会创建它。用方法 B 更可靠。
-
-### 方法 B：直接写入 config.yaml
+### B. Default config 完全缺失 platforms.api_server 段
+`hermes config set` 无法创建嵌套段结构。此时需直接编辑 config.yaml：
 
 ```bash
+# 在 plugins: 前插入
 sed -i '/^plugins:/i\
 platforms:\
   api_server:\
     extra:\
       host: 0.0.0.0\
       port: 8642\
-    key: hermes-fix-2026' /home/miao/.hermes/config.yaml
+    key: hermes-fix-2026' ~/.hermes/config.yaml
 ```
 
-### 修复后重启
+## 修复后验证
 
 ```bash
-# 杀旧进程，systemd 自动拉起新进程（带新配置）
-pkill -9 -f "hermes.*gateway run"
+# 重启 Gateway
+kill $(pgrep -f "hermes gateway run")  # systemd 自动拉起
 sleep 15
-# 验证
-ss -tlnp | grep 8642  # 应显示 0.0.0.0:8642
-curl -s http://100.86.13.11:8642/health  # 应返回 200
+
+# 确认绑定
+ss -tlnp | grep 8642  # → 0.0.0.0:8642 ✅
+
+# Tailscale 验证
+curl -s http://100.x.x.x:8642/health  # → {"status":"ok"}
 ```
 
 ## 预防
 
-在自检脚本中增加绑定地址检测（不仅是端口是否监听）：
-
+自检脚本增加端口绑定地址检测（不仅是端口是否监听）：
 ```bash
-# 检查 8642 是否绑定到 0.0.0.0（而非 127.0.0.1）
-if ss -tlnp | grep ':8642' | grep -q '0.0.0.0'; then
-    echo "✅ API Server 绑定 0.0.0.0"
-else
-    echo "❌ API Server 绑定错误（127.0.0.1），远程不可达"
-fi
+ss -tlnp | grep 8642 | grep -q '0.0.0.0' || echo "WARNING: API bound to localhost only"
 ```

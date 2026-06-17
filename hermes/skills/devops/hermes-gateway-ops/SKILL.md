@@ -571,6 +571,7 @@ Hermes 的 terminal 工具自动读取。不要用 `echo password | sudo -S cmd`
 | **灾备脚本路径硬编码** | 从旧笔记本迁移时，`$HOME/yanxinm` 在新机器上解析为 `/home/miao/yanxinm`（不存在）。脚本强切 SSH 绕过 ghproxy 代理。git push 失败时 `exit 1` 导致 cron 报错。 | 仓库路径改为 `$HOME/hermes-backup`；保持 HTTPS + ghproxy；push 失败退化为本地 tar + exit 0。详见 §十二。 |
 | **git push 被墙（smart HTTP 阻断）** | 即使 ghproxy HTTPS 代理对网页/API 可用，git smart HTTP 协议（fetch-pack/push）仍会 `unexpected disconnect`。SSH over 443 同样被 DPI 阻断。 | 灾备脚本不依赖 git push：先做本地 tar 备份，git push 仅最佳努力。网络恢复后自动同步。详见 `references/github-gfw-workaround.md`。 |
 | **cron_mode: deny 导致定时任务静默失败** | profile（通过 `--clone` 创建或默认）的 `approvals.cron_mode: deny` 会让 cron worker 在执行到任何需要审批的命令（terminal/write_file 等）时被直接拒绝，任务悄悄挂掉。`hermes cron list` 不显示错误——上次运行可能显示 `ok` 但实际 agent 内部已失败。症状：cron 按时触发但从未产生实际输出或副作用。 | **创建 profile 后立即改**：`sed -i 's/cron_mode: deny/cron_mode: allow/' ~/.hermes/profiles/<name>/config.yaml`。同时检查 default：`grep cron_mode ~/.hermes/config.yaml`。修改后需重启 Gateway。**注意：** `hermes config set approvals.cron_mode allow` 会写到当前活跃 profile 而非 default，务必显式指定 `-p default` 或用 sed 直接改。 |
+| **`hermes update` 静默副作用** | `hermes update` 执行后可能发生：(1) Gateway 日志迁移到 systemd journal，`gateway.log` 停止更新；(2) API Server 绑定从 `0.0.0.0` 回退到 `127.0.0.1`；(3) Web UI 版本在 `~/.hermes/node/` 中未更新（需单独 copy 全局版本）；(4) cron 投递渠道可能受影响需重新确认。症状分散：自检报平台断开、笔记本连不上、定时任务产出丢失。 | 升级后立即执行：① `ss -tlnp | grep 8642` 确认 API 绑定；② `journalctl -u hermes-gateway -n 5` 确认日志写入正常；③ `cat ~/.hermes/node/lib/node_modules/hermes-web-ui/package.json | grep version` 确认 Web UI 版本；④ `hermes cron list` 确认投递渠道。 |
 | **Hermes Desktop Dashboard WebSocket 卡死** | Desktop 远程后端显示“网关断开”/长任务中途断，但 `hermes-gateway` 仍 active；Dashboard `/api/status` 可能超时，`/api/ws` 断开 | 区分 messaging Gateway 与 Dashboard WebSocket；只重启卡死的 9119 Dashboard，验 `local/public 200` + `/api/ws` `101` + 模型 `OK`。如果反复“提示词发送失败”，不要继续让用户重开 Desktop，必须加每分钟 Dashboard watchdog（HTTP + WS 双检查，失败只重启 9119）。详见 `references/hermes-desktop-dashboard-ws-stall.md`。 |
 | **Hermes Desktop token 与 systemd Dashboard 不一致** | `local/public 200` 和 `/api/ws 101` 看似正常，但 Desktop 反复“提示词发送失败/网关断开/代理 1 个失败”；`hermes-dashboard.service` 自动拉起无固定 token 的 9119 进程，手动固定 token 启动会因 `EADDRINUSE` 失败 | 先用 `ss -tlnp` 找 9119 真实 PID，再查 `/proc/$PID/environ` 是否有 `HERMES_DASHBOARD_SESSION_TOKEN`。若 systemd 服务未注入 token，必须先 sudo 停/禁用或 patch `/etc/systemd/system/hermes-dashboard.service`；否则 watchdog 会反复拉起错误实例。详见 `references/hermes-desktop-systemd-token-mismatch.md`。 |
 | **Tailscale Funnel 多端口搭建** | 单个 Funnel 只能指向单一端口。两个 Funnel（8648 + 9119）的 DNS 名不同，Desktop 不能在同一个 Base URL 中同时使用两个端口。 | 同时需要 Web UI + Desktop 的场景，Funnel 指向 Dashboard (9119)，Web UI 通过 Tailscale IP 或内网直接访问。详见 `references/hermes-desktop-remote-backend.md`。 |
@@ -579,6 +580,10 @@ Hermes 的 terminal 工具自动读取。不要用 `echo password | sudo -S cmd`
 
 - `references/github-gfw-workaround.md` — GitHub 被墙时通过 api.github.com tarball 下载源码的替代方案
 - `references/cron-pkill-self-destruct.md` — 2026-05-24 自检脚本 v1 弑主事故分析
+- `references/pipefail-grep-quiet-sigpipe.md` — `set -o pipefail` + `grep -q` SIGPIPE 反转判断根因与修复
+- `references/api-server-config-missing.md` — API Server 0.0.0.0 配置丢失/回退 127.0.0.1 的诊断与修复
+- `references/gateway-log-journal-migration.md` — Gateway 升级后日志迁移到 systemd journal 的适配方案
+- `references/codex-bwrap-userns-fix.md` — Codex 沙箱权限：`apparmor_restrict_unprivileged_userns` 修复
 - `references/wsl-service-watchdog.md` — TDAI Gateway EPIPE 崩溃根因 + CLIProxyAPI 配置 + Provider 诊断速查
 - `references/hermes-full-stack-health-check.md` — 2026-05-24 全链路健康检查实战记录（含所有命令与预期输出）
 - `references/chrome-user-space-install.md` — Chrome 免 sudo 用户空间安装 + Hermes browser 工具集成
@@ -781,6 +786,27 @@ cronjob action=create name="Hermes 全链路自检 (每6小时)" \
 - **模式**：`no_agent=true` — 直接运行脚本，输出报告，不经过 LLM 处理
 - **投递**：`deliver=all` — 报告推送到所有已连接的渠道（微信 + 飞书）
 - **异常处理**：脚本 exit code > 0 时，cron 额外发送错误告警
+
+### 10.3 Cron 投递渠道切换
+
+切换已有 cron 的投递渠道（如飞书→微信）：
+
+```bash
+# 获取 cron ID
+hermes cron list | grep -B1 "Name:"
+
+# 修改投递
+hermes cron edit <id> --deliver weixin
+# 可选值: weixin, feishu, all, origin, local
+```
+
+**注意**：profile 隔离 — `hermes cron list` 只显示当前活跃 profile 的 cron。用 `hermes -p <name> cron list` 查看其他 profile。
+
+**`cron_mode: deny` 陷阱**：profile 的 `approvals.cron_mode: deny` 会让定时任务中任何需要审批的命令被直接拒绝，任务静默失败（`hermes cron list` 可能显示 `ok` 但实际 agent 内部已失败）。创建 profile 后立即改为 `allow`：
+```bash
+sed -i 's/cron_mode: deny/cron_mode: allow/' ~/.hermes/profiles/<name>/config.yaml
+grep cron_mode ~/.hermes/config.yaml  # 同时检查 default
+```
 
 ### 7.5 服务守护 watchdog（每 2 分钟检测）
 

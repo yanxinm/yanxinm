@@ -60,6 +60,7 @@ Home Assistant (Docker, 基地 :8123)
 | 文件 | 用途 |
 |------|------|
 | `references/platforms.md` | 六大平台详细调研（安装方式、插件、风险、注意事项） |
+| `references/dreame-credential-refresh.md` | 追觅凭据过期刷新的完整流程、API 端点、故障排除 |
 | `templates/docker-compose.yml` | HA + Mosquitto + Node-RED 的 Docker Compose 模板 |
 
 ## 已知平台集成状态
@@ -82,3 +83,4 @@ Home Assistant (Docker, 基地 :8123)
 - 美的双方案：hasscc/meiju（云API）和 midea_ac_lan（本地控制）可并存，本地优先延迟低
 - 晶御智能的国内特殊性：国内版 App 叫「晶御智能」，对应博世/西门子/嘉格纳家电，HA 官方集成需配置中国区服务器
 - 追觅两种路线：Tasshack/dreame-vacuum（云API，含地图）vs Valetudo（需越狱，完全本地），默认推荐前者
+- **追觅凭据过期**：Dreamehome 的 OAuth refresh_token 会周期性过期（全部实体 unavailable），可通过 API 直接刷新无需重装集成，详见 `references/dreame-credential-refresh.md`

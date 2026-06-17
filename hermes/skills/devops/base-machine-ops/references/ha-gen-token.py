@@ -22,7 +22,7 @@ import json, uuid, time, secrets
 import jwt
 
 AUTH_FILE = "/home/miao/docker/ha/config/.storage/auth"
-USER_ID = "3917a115d3d14f1682a65c8e7763b33a"  # yanxinm
+USER_ID = "3917a115d3d14f1682a6ff5dc4c088b8"  # yanxinm
 
 with open(AUTH_FILE) as f:
     auth_data = json.load(f)

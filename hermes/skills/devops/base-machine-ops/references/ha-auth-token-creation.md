@@ -66,6 +66,59 @@
 
 如果 HA 已经在运行中修改了 auth 文件，重启后修改会丢失。
 
+### ⚠️ 更隐蔽的坑：Token 字段格式不匹配导致被静默丢弃
+
+即使按正确顺序操作，如果 new refresh_token 缺少 HA 期望的字段或字段类型不匹配，HA 启动后会**静默删除该 token**（不出现在 refresh_tokens 列表中，JWT 验证返回 401）。
+
+已知导致 token 被丢弃的格式差异：
+
+| 问题 | 错误值 | 正确值 |
+|------|--------|--------|
+| `access_token_expiration` 类型 | `315360000` (int) | `315360000.0` (float) |
+| 缺少 `last_used_at` | 字段不存在 | `null` |
+| 缺少 `last_used_ip` | 字段不存在 | `null` |
+| 缺少 `credential_id` | 字段不存在 | `null` |
+
+**验证方法**：HA 启动后，检查容器内 auth 文件是否仍含该 token：
+```bash
+sudo docker exec homeassistant python3 -c "
+import json
+with open('/config/.storage/auth') as f:
+    auth = json.load(f)
+names = [rt.get('client_name') for rt in auth['data']['refresh_tokens']]
+print('hermes_proxy' in names)
+"
+```
+
+### ✅ 最可靠的 JWT 生成方式：容器内签发
+
+宿主机的 JWT（ha-gen-token.py 生成）可能因 HA 的 jwt_key 加载时序问题被拒绝。**推荐在容器内签发 JWT**：
+
+```bash
+# 容器内生成 JWT 并复制出来
+cat > /tmp/gen_jwt.py << 'PYEOF'
+import json, jwt, time
+with open('/config/.storage/auth') as f:
+    auth = json.load(f)
+for rt in auth['data']['refresh_tokens']:
+    if rt.get('client_name') == 'ha_app':   # 或其他已知有效的 token
+        iat = int(time.time())
+        exp = iat + int(rt['access_token_expiration'])
+        token = jwt.encode({'iss': rt['id'], 'iat': iat, 'exp': exp},
+                          rt['jwt_key'], algorithm='HS256')
+        with open('/tmp/jwt_out.txt', 'w') as f:
+            f.write(token)
+        break
+PYEOF
+
+sudo docker cp /tmp/gen_jwt.py homeassistant:/tmp/gen_jwt.py
+sudo docker exec homeassistant python3 /tmp/gen_jwt.py
+sudo docker cp homeassistant:/tmp/jwt_out.txt /home/miao/.ha_token
+chmod 600 /home/miao/.ha_token
+```
+
+**为什么容器内签发更可靠**：容器内 Python 直接读取 HA 内存中已加载的 auth 数据，jwt_key 保证一致。
+
 ## 生成脚本
 
 见同目录 `references/ha-gen-token.py`，在**宿主机**上执行（操作 bind mount 路径 `/home/miao/docker/ha/config/.storage/auth`）：

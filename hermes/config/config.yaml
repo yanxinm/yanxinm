@@ -372,19 +372,15 @@ mcp_servers:
     command: npx
     timeout: 120
   hermes-studio:
-    command: hermes-web-ui-mcp
-    enabled: true
-    env:
-      HERMES_WEBUI_STATE_DIR: /home/miao/.hermes-web-ui
-      HERMES_WEB_UI_HOME: /home/miao/.hermes-web-ui
-      HERMES_WEB_UI_MANAGED_MCP: "1"
-      HERMES_WEB_UI_URL: http://127.0.0.1:8648
-  prompt-optimizer:
+    command: /home/miao/.local/bin/node
     args:
-      - "-y"
-      - prompt-optimizer-mcp
-    command: npx
-    timeout: 60
+      - /home/miao/.hermes/node/lib/node_modules/hermes-web-ui/bin/hermes-web-ui-mcp.mjs
+    env:
+      HERMES_WEB_UI_URL: http://127.0.0.1:8648
+      HERMES_WEB_UI_HOME: /home/miao/.hermes-web-ui
+      HERMES_WEBUI_STATE_DIR: /home/miao/.hermes-web-ui
+      HERMES_WEB_UI_MANAGED_MCP: "1"
+    enabled: true
 memory:
   memory_char_limit: 2200
   memory_enabled: true
@@ -392,8 +388,8 @@ memory:
   user_char_limit: 1375
   user_profile_enabled: true
 model:
-  default: deepseek-v4-pro
-  provider: deepseek
+  default: agnes-2.0-flash
+  provider: custom:agnes-ai
 model_catalog:
   enabled: true
   providers: {}
@@ -414,6 +410,9 @@ paste_collapse_char_threshold: 2000
 paste_collapse_threshold: 5
 paste_collapse_threshold_fallback: 5
 personalities: {}
+homeassistant:
+  url: http://127.0.0.1:8123
+  token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJiOGIxNTRiZi1lM2ZhLTQzNzAtOGYzMy01MmUzNWU0ZTRmMTMiLCJpYXQiOjE3ODEwNTQwMjYsImV4cCI6MjA5NjQxNDAyNn0.2QD23Bvt1zt9CJaIc62_BX_8LO8rfpcvSM2mTJodtkk
 platform_toolsets:
   cli:
     - browser
@@ -423,6 +422,7 @@ platform_toolsets:
     - cronjob
     - delegation
     - file
+    - homeassistant
     - image_gen
     - memory
     - messaging
@@ -449,7 +449,10 @@ privacy:
   redact_pii: true
 prompt_caching:
   cache_ttl: 5m
-providers: {}
+providers:
+  deepseek:
+    base_url: https://api.deepseek.com
+    api_key: ${DEEPSEEK_API_KEY}
 quick_commands: {}
 secrets:
   bitwarden:
@@ -613,3 +616,6 @@ x_search:
   model: grok-4.20-reasoning
   retries: 2
   timeout_seconds: 180
+mcp:
+  servers:
+    enabled: false

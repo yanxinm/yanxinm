@@ -36,6 +36,8 @@
   - Tasshack 版是主流选择，Stars 最高
   - foXaCe fork 修复了一些架构问题，可作备选
   - Valetudo 路线可完全本地化但需要刷机，不推荐小白
+- **凭据过期**：Dreamehome 账号的 OAuth `auth_key`（refresh_token）会周期性过期，导致全部实体不可用。刷新流程见 [`references/dreame-credential-refresh.md`](references/dreame-credential-refresh.md)
+- **已知坑**：v2.0.0b23 + HA 2026.6.1 存在 MQTT 连接超时导致 setup 被取消（`CancelledError`），建议检查 HACS 更新
 
 ---
 

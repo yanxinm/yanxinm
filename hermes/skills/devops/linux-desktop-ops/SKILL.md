@@ -1,11 +1,11 @@
 ---
 name: linux-desktop-ops
-description: Linux GNOME 桌面运维—应用菜单管理、Snap Store 修复、Electron 应用部署。
+description: Linux GNOME 桌面运维—应用菜单管理、Snap Store 修复、PipeWire 音频排障、Electron 应用部署。
 ---
 
 # Linux 桌面运维
 
-适用范围：Ubuntu GNOME 桌面环境（22.04+）。涵盖应用菜单管理、软件中心修复、Electron 应用在 Linux 上的部署。
+适用范围：Ubuntu GNOME 桌面环境（22.04+）。涵盖应用菜单管理、软件中心修复、PipeWire 音频排障、Electron 应用在 Linux 上的部署。
 
 ## 1. 应用菜单（Desktop Entry）管理
 
@@ -74,7 +74,86 @@ pkill -f snap-store
 # 从应用菜单重新打开
 ```
 
-## 3. Electron 应用在国内的部署（GFW 环境）
+## 3. PipeWire/WirePlumber 音频排障（Ubuntu 22.04+）
+
+Ubuntu 22.04+ 默认用 PipeWire + WirePlumber 替代 PulseAudio。常见"没声音"问题的根因通常是**默认输出设备指向了错误的 sink**（如已断开的蓝牙设备）。
+
+### 诊断流程
+
+```bash
+# 1. 确认硬件声卡存在
+cat /proc/asound/cards && aplay -l
+
+# 2. 检查 PipeWire 进程
+ps aux | grep -E 'pipewire|wireplumber' | grep -v grep
+
+# 3. 列出输出设备和默认值
+export XDG_RUNTIME_DIR=/run/user/1000
+export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/1000/bus"
+pactl list sinks short        # 全部输出设备
+pactl info | grep '默认音频'   # 当前默认输出
+pactl list cards | grep -E '活动配置|available|not available'  # 声卡配置和端口状态
+```
+
+### 常见根因
+
+| 症状 | 根因 | 验证方法 |
+|------|------|----------|
+| 无声，HDMI 接电视 | 默认 sink 指向已断开的蓝牙设备 | `pactl info` 看 "默认音频入口" |
+| 模拟口无声 | 配置用了 `output:analog-stereo` 但无内置扬声器 | `pactl list cards` 看端口 status |
+| 重启后默认输出又变回蓝牙 | WirePlumber 状态文件持久化了旧优先级 | `cat ~/.local/state/wireplumber/default-nodes` |
+
+### 修复步骤
+
+```bash
+export XDG_RUNTIME_DIR=/run/user/1000
+export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/1000/bus"
+
+# 1. 切换到正确声卡配置（如 HDMI 输出）
+pactl set-card-profile alsa_card.pci-0000_00_1f.3 output:hdmi-stereo+input:analog-stereo
+
+# 2. 设默认输出 sink
+pactl set-default-sink alsa_output.pci-0000_00_1f.3.hdmi-stereo
+
+# 3. 取消静音 + 调音量
+pactl set-sink-mute alsa_output.pci-0000_00_1f.3.hdmi-stereo 0
+pactl set-sink-volume alsa_output.pci-0000_00_1f.3.hdmi-stereo 60%
+```
+
+### 持久化（防重启丢失）
+
+WirePlumber 在 `~/.local/state/wireplumber/default-nodes` 持久化了默认输出优先级。**pactl 的临时设置会被这个文件覆盖**，必须同步修改：
+
+```bash
+cat > ~/.local/state/wireplumber/default-nodes << 'EOF'
+[default-nodes]
+default.configured.audio.sink=alsa_output.pci-0000_00_1f.3.hdmi-stereo
+default.configured.audio.sink.0=alsa_output.pci-0000_00_1f.3.hdmi-stereo
+default.configured.audio.sink.1=bluez_output.XX_XX_XX_XX_XX_XX.1
+default.configured.audio.sink.2=alsa_output.pci-0000_00_1f.3.analog-stereo
+EOF
+```
+
+声卡配置（profile）持久化通过 WirePlumber Lua 规则：
+
+```bash
+mkdir -p ~/.config/wireplumber/main.lua.d
+# 写入 device.profile 匹配规则（见 references/pipewire-audio-persist.lua）
+```
+
+### 前置依赖
+
+```bash
+sudo apt install pulseaudio-utils -y   # 提供 pactl（PipeWire 系统上 pactl 通过 pipewire-pulse 通信）
+```
+
+### 陷阱
+
+- **`pactl` 连接失败**（"拒绝连接"）：未设置 `XDG_RUNTIME_DIR` 和 `DBUS_SESSION_BUS_ADDRESS`。这两个变量在 GNOME 会话中自动存在，但 Hermes terminal 调用的 shell 里不继承，需手动 export。
+- **`pw-cli` 报 "主机已关闭"**：同样缺少上述环境变量。
+- **M710q 等迷你主机通常无内置扬声器**：`analog-output-speaker` 端口显示 "availability unknown" 为正常。音频应走 HDMI（接电视/显示器）或 3.5mm 耳机口。
+
+## 4. Electron 应用在国内的部署（GFW 环境）
 
 > 详见 `references/electron-deploy-gfw.md`
 
