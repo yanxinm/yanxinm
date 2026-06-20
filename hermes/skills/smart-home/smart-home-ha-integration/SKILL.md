@@ -84,3 +84,21 @@ Home Assistant (Docker, 基地 :8123)
 - 晶御智能的国内特殊性：国内版 App 叫「晶御智能」，对应博世/西门子/嘉格纳家电，HA 官方集成需配置中国区服务器
 - 追觅两种路线：Tasshack/dreame-vacuum（云API，含地图）vs Valetudo（需越狱，完全本地），默认推荐前者
 - **追觅凭据过期**：Dreamehome 的 OAuth refresh_token 会周期性过期（全部实体 unavailable），可通过 API 直接刷新无需重装集成，详见 `references/dreame-credential-refresh.md`
+
+---
+
+## 技能合并记录
+
+本技能已吸收以下已归档技能的独特内容：
+
+- **home-assistant-integration** — Hermes-HA token 配置、`ha_*` 工具使用、Hermes 侧集成平台矩阵
+- **homeassistant-base-deployment** — REST API 诊断、token 处理技巧（`execute_code` 避免截断）
+- **homeassistant-deployment** — Tailscale Funnel 根路径 `/` 要求、反向代理配置
+- **home-assistant-deployment** — M710q Docker 部署细节、HACS 手动安装
+- **home-assistant-base-deploy** — 国内网络代理（ghproxy.net）、HA 2026.6.x 兼容性坑
+
+新增支持文件（从已归档技能迁入）：
+- `references/home-assistant-integration-platforms.md` — Hermes-HA 工具集成指南
+- `templates/docker-compose-ha-integration.yml` — 扩展 Docker Compose（含 Hermes 集成）
+- `references/homeassistant-integrations.md` — 集成兼容性矩阵
+- `references/homeassistant-deployment-platforms.md` — 部署平台说明

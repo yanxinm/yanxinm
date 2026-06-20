@@ -66,6 +66,18 @@ cp -r ~/.hermes/profiles/jike/skills/apikey-image-gen ~/.hermes/profiles/<name>/
 | 出图失败 → 缺 fun-codex provider | config.yaml 没加 custom_providers |
 | memory 满了加不进路由 | 先合并精简已有条目 |
 
+## Profile 模型统一约定
+
+**所有 profile（default/jike/wenan/lvyou/zhidu/sheji）文本对话统一使用 agnes-2.0-flash（custom:agnes-ai）。**
+- sheji 特殊：文本走 agnes，image_gen toolset 走 fun-codex provider 调用 gpt-image-2 出图。
+- 切换方式：`patch` config.yaml 的 `model.default` 和 `model.provider` 字段。
+
+## Profile 切换原则
+
+1. **默认前台是 `default`**——日常对话、总负责路由都走 default。
+2. **任务分配时切换**——需要 jike/wenan/lvyou/sheji/zhidu 执行任务时，切换到对应 profile。
+3. **专项长任务**——切换到对应 profile 执行，完成后下一次新对话切回 default。
+
 ## 已有团队清单
 
 用户想把不同类别的工作分给专门的 AI 助手（如文案、极客、旅游规划师、制度写手），而不是所有任务都交给一个 agent。

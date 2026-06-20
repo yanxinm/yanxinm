@@ -27,7 +27,7 @@
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-06-06T16:17:49.052818+08:00",
-      "next_run_at": "2026-06-13T08:30:00+08:00",
+      "next_run_at": "2026-06-20T08:30:00+08:00",
       "last_run_at": "2026-06-12T09:09:35.221175+08:00",
       "last_status": "ok",
       "last_error": null,
@@ -65,7 +65,7 @@
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-06-06T16:17:49.615378+08:00",
-      "next_run_at": "2026-06-13T12:00:00+08:00",
+      "next_run_at": "2026-06-20T12:00:00+08:00",
       "last_run_at": null,
       "last_status": null,
       "last_error": null,
@@ -179,7 +179,7 @@
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-06-06T16:17:51.326526+08:00",
-      "next_run_at": "2026-06-13T08:10:00+08:00",
+      "next_run_at": "2026-06-21T08:10:00+08:00",
       "last_run_at": "2026-06-12T09:08:54.985913+08:00",
       "last_status": "error",
       "last_error": "Script exited with code 1\nstderr:\n/home/miao/.hermes/scripts/hermes_backup.sh: \u7b2c 12 \u884c\uff1a cd: /home/miao/.hermes/profiles/jike/home/hermes-backup: \u6ca1\u6709\u90a3\u4e2a\u6587\u4ef6\u6216\u76ee\u5f55",
@@ -217,7 +217,7 @@
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-06-06T16:17:51.896480+08:00",
-      "next_run_at": "2026-06-13T09:00:00+08:00",
+      "next_run_at": "2026-06-20T09:00:00+08:00",
       "last_run_at": "2026-06-12T09:09:23.234293+08:00",
       "last_status": "ok",
       "last_error": null,
@@ -288,17 +288,17 @@
       "schedule_display": "every 2m",
       "repeat": {
         "times": null,
-        "completed": 2503
+        "completed": 2800
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-06-06T16:17:53.039117+08:00",
-      "next_run_at": "2026-06-12T09:10:49.586931+08:00",
-      "last_run_at": "2026-06-12T07:33:00.873079+08:00",
-      "last_status": "ok",
-      "last_error": null,
+      "next_run_at": "2026-06-20T08:11:10.768944+08:00",
+      "last_run_at": "2026-06-20T08:09:10.768944+08:00",
+      "last_status": "error",
+      "last_error": "Script exited with code 1\nstderr:\n/home/miao/.hermes/scripts/watchdog.sh: \u7b2c 31 \u884c\uff1a cd: /home/yanxin/Hermes-Agent: \u6ca1\u6709\u90a3\u4e2a\u6587\u4ef6\u6216\u76ee\u5f55\nstdout:\n[2026-06-20 08:09:10] \u26a0\ufe0f Hermes Gateway \u672a\u8fd0\u884c\uff0c\u6b63\u5728\u91cd\u542f...\n[2026-06-20 08:09:10] \u274c \u65e0\u6cd5\u8fdb\u5165 Hermes-Agent",
       "last_delivery_error": null,
       "deliver": "local",
       "origin": null,
@@ -326,18 +326,18 @@
       "schedule_display": "0 0,12 * * *",
       "repeat": {
         "times": null,
-        "completed": 20
+        "completed": 21
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-06-06T16:17:53.601004+08:00",
-      "next_run_at": "2026-06-12T12:00:00+08:00",
-      "last_run_at": "2026-06-11T12:00:48.014636+08:00",
+      "next_run_at": "2026-06-20T12:00:00+08:00",
+      "last_run_at": "2026-06-20T00:00:07.092548+08:00",
       "last_status": "ok",
       "last_error": null,
-      "last_delivery_error": "delivery error: Weixin send failed: iLink sendmessage rate limited; cooldown active for 30.0s",
+      "last_delivery_error": null,
       "deliver": "weixin",
       "origin": null,
       "enabled_toolsets": null,
@@ -417,7 +417,7 @@
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-06-08T15:18:47.949951+08:00",
-      "next_run_at": "2026-06-15T09:00:00+08:00",
+      "next_run_at": "2026-06-22T09:00:00+08:00",
       "last_run_at": null,
       "last_status": null,
       "last_error": null,
@@ -505,5 +505,5 @@
       "profile": "wenan"
     }
   ],
-  "updated_at": "2026-06-13T08:50:50.087640+08:00"
+  "updated_at": "2026-06-20T08:10:10.620936+08:00"
 }

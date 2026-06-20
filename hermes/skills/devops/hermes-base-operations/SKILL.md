@@ -344,6 +344,24 @@ python3 ~/.hermes/skills/devops/hermes-base-operations/scripts/ws_rpc_probe.py
 | watchdog 显示 unhealthy 但手动检查正常 | 多个 Dashboard 进程抢占 9119 |
 | 重启后恢复，几分钟后又断 | systemd 自动拉起新实例（随机 token 覆盖固定 token） |
 
+### Tailscale 远程访问慢的诊断
+
+**症状**：从笔记本通过 Tailscale IP 访问基地服务（8648/3071 等）很慢，但本地 `curl localhost` 正常。
+
+**根因**：Tailscale 无法建立 P2P 直连，流量走了 relay 节点中转。
+
+**诊断**：
+```bash
+tailscale status
+# 看节点状态：如果有 "active" 但没有直连（显示 relay "xxx"），说明走了中继
+```
+
+**修复**：
+1. 检查双方 Tailscale 版本一致
+2. 单位网络可能封锁了 Tailscale UDP 端口（41641），导致无法 P2P
+3. 临时方案：SSH 端口转发 `ssh -L 8648:localhost:8648 miao@基地IP`
+4. 长期方案：在单位网络放行 Tailscale 端口，或改用 Funnel 公网访问
+
 ### 常见陷阱：Desktop 切换远程地址后报 "Hermes couldn't start"
 
 **症状**：在 Desktop 设置里把后端地址改成 Funnel 公网 URL，保存后重启，弹出 "Hermes couldn't start — Timed out connecting to Hermes backend after 15000ms"。

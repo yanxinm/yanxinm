@@ -90,7 +90,7 @@ hermes chat [flags]
 
 ### Configuration
 
-```
+```bash
 hermes setup [section]      Interactive wizard (model|terminal|gateway|tools|agent)
 hermes model                Interactive model/provider picker
 hermes config               View current config
@@ -105,6 +105,35 @@ hermes logout               Clear stored auth
 hermes doctor [--fix]       Check dependencies and config
 hermes status [--all]       Show component status
 ```
+
+#### Batch-update model/provider across all profiles
+
+When changing the model for all profiles at once (e.g. switching from deepseek to agnes), inspect each profile's first 3 lines:
+
+```bash
+for p in default jike lvyou wenan zhidu sheji; do
+  echo "=== $p ==="; head -3 ~/.hermes/profiles/$p/config.yaml 2>/dev/null || echo "(no profile dir)"
+done
+# For default profile, check main config.yaml:
+grep -A2 "^model:" ~/.hermes/config.yaml
+```
+
+Use `patch` to change `model.default` and `model.provider` in each profile. Always verify after with:
+
+```bash
+for p in default jike lvyou wenan zhidu sheji; do
+  echo "$p: "; head -3 ~/.hermes/profiles/$p/config.yaml 2>/dev/null | grep -A2 "^model:" || grep -A2 "^model:" ~/.hermes/config.yaml
+done
+```
+
+#### Mixed provider pattern (text vs image-gen)
+
+When a profile needs text on one provider but image generation on another (e.g. sheji: agnes for text, fun-codex/gpt-image-2 for images):
+
+1. Set `model.provider` to the text provider (e.g. `custom:agnes-ai`)
+2. **Keep the image provider defined** in `providers:` section (even if unused for text)
+3. Add `image_gen` to the profile's `toolsets:` list
+4. The image_gen toolset will route to whichever provider supports it
 
 ### Tools & Skills
 

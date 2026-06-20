@@ -729,7 +729,13 @@ for p in d.get('Peer',{}).values():
 | 调度 | 周六+周日 12:00 | 双保险，命中周末在家的概率 |
 | 容错 | 中继时静默跳过 | 不报错，等下一轮直连 |
 
-## 十二、第三方 Skill 安装
+## 十二、aria2c 后台下载注意事项
+
+aria2c 后台下载 BT 种子时，`process poll` 可能泄漏二进制垃圾（tracker 响应中的非 UTF-8 数据）和大量 ANSI 进度条刷屏。**必须**加 `--console-log-level=warn` 和 `2>/dev/null`，poll 时只取最后一行。详见 [`references/aria2c-background-binary-garbage.md`](references/aria2c-background-binary-garbage.md)。
+
+**死种判断**：运行 3 分钟以上 CN:0 SD:0 DL:0B → 死种，终止下载。有 peer 但速度 < 100 KiB/s 且 ETA > 100 小时 → 种子极度不活跃，告知用户。
+
+## 十三、第三方 Skill 安装
 
 Hermes 会自动发现 `~/.hermes/skills/<name>/` 下任何包含 `SKILL.md` 的目录，无需手动注册。
 

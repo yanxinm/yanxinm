@@ -1,0 +1,30 @@
+services:
+  homeassistant:
+    container_name: homeassistant
+    image: ghcr.io/home-assistant/home-assistant:stable
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - ./config:/config
+      - /etc/localtime:/etc/localtime:ro
+      - /run/dbus:/run/dbus:ro
+    environment:
+      - TZ=Asia/Shanghai
+    # 有 Zigbee/Z-Wave USB dongle 时取消注释：
+    # devices:
+    #   - /dev/ttyUSB0:/dev/ttyUSB0
+    # 需要蓝牙时取消注释：
+    # cap_add:
+    #   - NET_ADMIN
+    #   - NET_RAW
+
+  # 可选：Node-RED 自动化（需要时取消注释）
+  # nodered:
+  #   image: nodered/node-red:latest
+  #   container_name: nodered
+  #   network_mode: host
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./nodered:/data
+  #   environment:
+  #     - TZ=Asia/Shanghai
