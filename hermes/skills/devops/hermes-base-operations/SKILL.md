@@ -218,6 +218,22 @@ done
 
 ---
 
+## 灾备脚本排障（hermes_backup.sh 超时）
+
+**症状**：cron 任务 `每日灾备`（`3ac78f958ffa`）执行失败，日志显示 `script timed out after 120s`。
+
+**根因**：`set -euo pipefail` 过于严格，`rm -rf` 重建备份目录 + `rsync --delete` 同步 + 大文件 tar 压缩导致超时。
+
+**修复步骤**：
+1. 去掉 `set -e`（改为 `set -uo pipefail`），不再因单个命令失败而中断
+2. 去掉 `rm -rf "$BACKUP_DIR"` 重建，改为增量同步（rsync 不带 `--delete`）
+3. 所有可能失败的步骤加 `|| true`
+4. `tar -czf` 也加 `|| true` 防压缩失败阻断
+
+**验证**：`timeout 120 bash /home/miao/.hermes/scripts/hermes_backup.sh` 应在 30s 内完成。
+
+---
+
 ## 六、Home Assistant 集成
 
 Hermes Agent 原生支持 Home Assistant，通过 `HASS_TOKEN` 激活。

@@ -10,7 +10,7 @@ html-video (nexu-io) 已部署在基地 /home/miao/html-video/，22 模板，Hyp
 §
 搜索默认用 AnySearch（~/.hermes/skills/anysearch/，v2.1.0）。CLI：python3 ~/.hermes/skills/anysearch/scripts/anysearch_cli.py search "query" -m N。支持 search/batch_search/extract/get_sub_domains。匿名模式可用，不再用其他搜索方式。
 §
-Cron投递已切回微信(不飞书): 每日简报/灾备/全链路自检→微信。jike的零点自检+简报→微信。Tailscale确认为远程方案(UU远程被否)。笔记本通过100.86.13.11访问基地WebUI(:8648)和API(:8642)。HA在基地Docker运行(:8123)，dreame_vacuum已修复(auth_key刷新+config注入绕过MQTT超时)。
+灾备/备份类cron任务（hermes_backup.sh等）一旦报错必须主动查修，不等用户提醒。发现问题直接修，修完验证通过再汇报。
 §
 GitHub全墙(SSH/HTTPS git不可用,仅HTTP)。灾备走本地tar(~/.hermes/scripts/hermes_backup.sh)。Codex CLI用apikey.fun+echobird(:53682)，bwrap需apparmor_restrict_unprivileged_userns=0。Chrome 149 ~/apps/chrome/ headless正常。SSH key已生成未加GitHub。
 §

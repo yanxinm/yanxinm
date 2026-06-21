@@ -20,15 +20,15 @@
       "schedule_display": "30 8 * * *",
       "repeat": {
         "times": null,
-        "completed": 6
+        "completed": 7
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-06-06T16:17:49.052818+08:00",
-      "next_run_at": "2026-06-20T08:30:00+08:00",
-      "last_run_at": "2026-06-12T09:09:35.221175+08:00",
+      "next_run_at": "2026-06-21T08:30:00+08:00",
+      "last_run_at": "2026-06-20T08:33:48.938676+08:00",
       "last_status": "ok",
       "last_error": null,
       "last_delivery_error": null,
@@ -58,23 +58,24 @@
       "schedule_display": "0 12 * * 6,0",
       "repeat": {
         "times": null,
-        "completed": 0
+        "completed": 1
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-06-06T16:17:49.615378+08:00",
-      "next_run_at": "2026-06-20T12:00:00+08:00",
-      "last_run_at": null,
-      "last_status": null,
-      "last_error": null,
+      "next_run_at": "2026-06-21T12:00:00+08:00",
+      "last_run_at": "2026-06-20T12:00:43.415501+08:00",
+      "last_status": "error",
+      "last_error": "Script exited with code 1\nstderr:\nTraceback (most recent call last):\n  File \"/home/miao/.hermes/scripts/sync_taizhang.py\", line 7, in <module>\n    import paramiko\nModuleNotFoundError: No module named 'paramiko'",
       "last_delivery_error": null,
       "deliver": "origin",
       "origin": null,
       "enabled_toolsets": null,
       "workdir": null,
-      "profile": null
+      "profile": null,
+      "fire_claim": null
     },
     {
       "id": "cc4df194c62f",
@@ -179,7 +180,7 @@
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-06-06T16:17:51.326526+08:00",
-      "next_run_at": "2026-06-21T08:10:00+08:00",
+      "next_run_at": "2026-06-22T08:10:00+08:00",
       "last_run_at": "2026-06-20T08:12:12.894702+08:00",
       "last_status": "error",
       "last_error": "Script timed out after 120s: /home/miao/.hermes/scripts/hermes_backup.sh",
@@ -210,15 +211,15 @@
       "schedule_display": "0 9 * * *",
       "repeat": {
         "times": null,
-        "completed": 6
+        "completed": 7
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-06-06T16:17:51.896480+08:00",
-      "next_run_at": "2026-06-20T09:00:00+08:00",
-      "last_run_at": "2026-06-12T09:09:23.234293+08:00",
+      "next_run_at": "2026-06-21T09:00:00+08:00",
+      "last_run_at": "2026-06-20T09:02:57.114860+08:00",
       "last_status": "ok",
       "last_error": null,
       "last_delivery_error": null,
@@ -288,23 +289,24 @@
       "schedule_display": "every 2m",
       "repeat": {
         "times": null,
-        "completed": 2806
+        "completed": 3280
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-06-06T16:17:53.039117+08:00",
-      "next_run_at": "2026-06-20T08:29:11.040048+08:00",
-      "last_run_at": "2026-06-20T08:27:11.040048+08:00",
+      "next_run_at": "2026-06-21T08:11:53.113827+08:00",
+      "last_run_at": "2026-06-21T08:09:53.113827+08:00",
       "last_status": "error",
-      "last_error": "Script exited with code 1\nstderr:\n/home/miao/.hermes/scripts/watchdog.sh: \u7b2c 31 \u884c\uff1a cd: /home/yanxin/Hermes-Agent: \u6ca1\u6709\u90a3\u4e2a\u6587\u4ef6\u6216\u76ee\u5f55\nstdout:\n[2026-06-20 08:27:10] \u26a0\ufe0f Hermes Gateway \u672a\u8fd0\u884c\uff0c\u6b63\u5728\u91cd\u542f...\n[2026-06-20 08:27:10] \u274c \u65e0\u6cd5\u8fdb\u5165 Hermes-Agent",
+      "last_error": "Script exited with code 1\nstderr:\n/home/miao/.hermes/scripts/watchdog.sh: \u7b2c 31 \u884c\uff1a cd: /home/yanxin/Hermes-Agent: \u6ca1\u6709\u90a3\u4e2a\u6587\u4ef6\u6216\u76ee\u5f55\nstdout:\n[2026-06-21 08:09:53] \u26a0\ufe0f Hermes Gateway \u672a\u8fd0\u884c\uff0c\u6b63\u5728\u91cd\u542f...\n[2026-06-21 08:09:53] \u274c \u65e0\u6cd5\u8fdb\u5165 Hermes-Agent",
       "last_delivery_error": null,
       "deliver": "local",
       "origin": null,
       "enabled_toolsets": null,
       "workdir": null,
-      "profile": null
+      "profile": null,
+      "fire_claim": null
     },
     {
       "id": "7c49a76dc286",
@@ -326,15 +328,15 @@
       "schedule_display": "0 0,12 * * *",
       "repeat": {
         "times": null,
-        "completed": 21
+        "completed": 23
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-06-06T16:17:53.601004+08:00",
-      "next_run_at": "2026-06-20T12:00:00+08:00",
-      "last_run_at": "2026-06-20T00:00:07.092548+08:00",
+      "next_run_at": "2026-06-21T12:00:00+08:00",
+      "last_run_at": "2026-06-21T00:00:54.293370+08:00",
       "last_status": "ok",
       "last_error": null,
       "last_delivery_error": null,
@@ -342,7 +344,8 @@
       "origin": null,
       "enabled_toolsets": null,
       "workdir": null,
-      "profile": null
+      "profile": null,
+      "fire_claim": null
     },
     {
       "id": "44f35559ba1f",
@@ -505,5 +508,5 @@
       "profile": "wenan"
     }
   ],
-  "updated_at": "2026-06-20T08:27:11.040250+08:00"
+  "updated_at": "2026-06-21T08:10:53.002677+08:00"
 }
