@@ -11,6 +11,8 @@ version: 1.0.0
 - 调研某个品牌/平台的 HA 集成可行性
 - 规划 HA + Hermes 统一管理架构
 - 在基地（M710q Ubuntu）上安装/恢复 HA 环境
+- **HA 设备实体大量 unavailable 的故障修复**（如凭据过期、集成报错）
+- **微信/飞书中任何智能家居控制指令**（温度查询、扫地机控制、窗帘/灯光/空调操作等）— 无论当前 profile 是谁，自动切入 HA 模式执行
 
 ## 核心架构
 
@@ -84,6 +86,174 @@ Home Assistant (Docker, 基地 :8123)
 - 晶御智能的国内特殊性：国内版 App 叫「晶御智能」，对应博世/西门子/嘉格纳家电，HA 官方集成需配置中国区服务器
 - 追觅两种路线：Tasshack/dreame-vacuum（云API，含地图）vs Valetudo（需越狱，完全本地），默认推荐前者
 - **追觅凭据过期**：Dreamehome 的 OAuth refresh_token 会周期性过期（全部实体 unavailable），可通过 API 直接刷新无需重装集成，详见 `references/dreame-credential-refresh.md`
+- **追觅 v2.0.0b23 + HA 2026.6.x 兼容问题**：config flow 的 setup 阶段 MQTT connect 可能超时被 Cancel，绕过方案是直写 config JSON + restart HA，不走 HA UI 的 config flow
+
+---
+
+## HomeKit Bridge（把 HA 设备接入 Apple 家庭）
+
+### 用途
+
+将 HA 中已接入的所有设备（米家/追觅/海尔等）统一暴露给 Apple HomeKit，实现：
+- iPhone 家庭 App 直接控制
+- Siri 语音控制
+- 家庭自动化场景
+
+### 配置方法
+
+**推荐：通过 HA UI 配置**（避免 Docker 文件权限问题）
+
+1. 打开 HA 网页：`http://<HA_IP>:8123`
+2. 设置 → 设备与服务 → 添加集成 → 搜索 "HomeKit Bridge"
+3. 选择要暴露的设备域（light/switch/cover/fan/climate/sensor）
+4. 保存后会生成配对码
+
+**备选：编辑 configuration.yaml**（需处理权限）
+
+```yaml
+homekit:
+  - name: 缪宅
+    port: 21063
+    filter:
+      include_domains:
+        - light
+        - switch
+        - cover
+        - fan
+        - climate
+        - sensor
+      include_entity_globs:
+        - sensor.*temperature*
+        - sensor.*humidity*
+```
+
+**权限坑**：Docker 部署的 HA，`configuration.yaml` 通常归 `root` 所有，直接编辑会报权限不足。解决方案：
+1. `sudo chmod 666 /path/to/config/configuration.yaml` 再编辑
+2. 或优先用 HA UI 配置（推荐）
+
+### iPhone 配对
+
+1. 打开「家庭」App
+2. 点击 + → 添加配件 → 扫描代码
+3. 输入 HA 显示的配对码
+4. 按提示分配房间
+
+### 获取配对码
+
+**方法1：HA 通知**（首次添加集成后）
+- HA 左下角通知图标 → 查看 HomeKit 配对通知
+
+**方法2：Docker 日志**（推荐，通知可能消失）
+```bash
+docker logs homeassistant 2>&1 | grep -i "pin\|pairing"
+```
+
+输出示例：
+```
+Or enter this code in your HomeKit app on your iOS device: 906-89-047
+```
+
+**注意**：每次创建新的 HomeKit Bridge 都会生成新的配对码。如有多个 Bridge，配对时选择对应名称。
+
+### 多个 Bridge 实例说明
+
+添加 HomeKit Bridge 后，HA 会自动创建多个 Bridge 实例：
+
+| Bridge 类型 | 用途 | 示例名称 |
+|-------------|------|----------|
+| 主 Bridge | 暴露 lights/switches/climate 等设备 | `HASS Bridge` |
+| 摄像头 Bridge | 每个摄像头一个独立实例 | `Current Map`、`Saved Map` |
+| 媒体播放器 Bridge | 每个电视/接收器一个实例 | 自动创建 |
+
+**原因**：摄像头和部分媒体设备需要 accessory 模式运行，无法与其他设备共用 Bridge。
+
+**配对时**：选择主 Bridge（如 `HASS Bridge` 或 `HASS Bridge IU`），摄像头 Bridge 可选择性添加。
+
+### 故障排除
+
+| 问题 | 解决 |
+|------|------|
+| 配对码不显示 | `docker logs homeassistant 2>&1 \| grep -i "pin\|pairing"` 查日志 |
+| 部分设备不显示 | 检查 `include_domains` 或在 HA UI 中单独选择 |
+| iPhone 扫码/发现失败 | 1. 确保同一 WiFi（非手机热点）2. iPhone 蓝牙开启 3. 用「我没有或无法扫描代码」手动输入 |
+| 配对后显示「无法接入」| 1. 检查 HA 网络模式是否为 `host` 2. `docker exec homeassistant netstat -tlnp \| grep 2106` 确认端口监听 3. 确认 avahi/mDNS 服务运行中 |
+| 配对失败 | 确保iPhone和HA在同一局域网 |
+| **显示「配件不可连接」** | **先检查防火墙！** 见下方防火墙配置，再考虑重置流程 |
+
+### 防火墙配置（关键坑）
+
+**症状**：iPhone 能发现 HomeKit Bridge，但配对时显示「配件不可连接」
+
+**根因**：防火墙阻止了 HomeKit 端口（21064-21070/tcp）和 mDNS 发现端口（5353/udp）
+
+**诊断命令**：
+```bash
+# 检查防火墙状态
+sudo ufw status
+
+# 检查 HomeKit 端口是否开放
+sudo ufw status | grep 2106
+
+# 检查 mDNS 端口
+sudo ufw status | grep 5353
+```
+
+**修复命令**（ufw）：
+```bash
+# 开放 HomeKit Bridge 端口范围
+sudo ufw allow 21064:21070/tcp comment 'HomeKit Bridge'
+
+# 开放 mDNS/Bonjour 发现端口
+sudo ufw allow 5353/udp comment 'mDNS/Bonjour'
+
+# 重新加载防火墙
+sudo ufw reload
+```
+
+**验证**：
+```bash
+# 确认端口监听
+sudo ss -tlnp | grep 2106
+
+# 确认 mDNS 运行
+sudo ss -ulnp | grep 5353
+```
+
+**注意**：即使 HA 用 `--network host` 模式，主机防火墙仍会阻止外部访问，必须显式开放端口。
+
+### 重置 HomeKit Bridge 配对
+
+当配对反复失败或显示「配件不可连接」时，需重置配对状态：
+
+**步骤1：删除配对状态文件**
+```bash
+docker exec homeassistant rm -f /config/.storage/homekit.*.state
+```
+
+**步骤2：重启 HA 容器**
+```bash
+docker restart homeassistant
+```
+
+**步骤3：等待 HomeKit 重新初始化（约30秒）**
+```bash
+sleep 30 && docker logs homeassistant 2>&1 | grep -i "pin\|pairing" | tail -5
+```
+
+**步骤4：获取新配对码**
+
+输出示例：
+```
+Or enter this code in your HomeKit app on your iOS device: 627-57-987
+Or enter this code in your HomeKit app on your iOS device: 465-41-583
+```
+
+**步骤5：iPhone 重新配对**
+1. 家庭 App → + → 添加配件 → 我没有或无法扫描代码
+2. 选择对应的 Bridge（如 `HASS Bridge IU`）
+3. 输入新的配对码
+
+**注意**：重置后旧的配对关系失效，需重新添加所有设备到家庭 App。
 
 ---
 

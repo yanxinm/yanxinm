@@ -2,8 +2,6 @@
 §
 用户原则：1.隐私保护 2.事实核查不编创 3.文件操作限 /home/miao/工作台账/ 4.自主执行不等命令 5.正确时反对拿证据 6.主动提醒未推工作。+长任务主动汇报、完成后主动验证，安静=失职。
 §
-Dashboard WebSocket 反复断的根因：systemd 服务 `/etc/systemd/system/hermes-dashboard.service` 以随机 token 启动，与固定 token 文件不一致导致 Desktop 发送失败。修法：`sudo systemctl stop/disable hermes-dashboard.service`，再手动 `HERMES_DASHBOARD_SESSION_TOKEN=... hermes dashboard --port 9119`。watchdog 脚本在 `~/.hermes/scripts/dashboard_watchdog.sh` 每分钟检测自恢复。
-§
 html-video (nexu-io) 已部署在基地 /home/miao/html-video/，22 模板，Hyperframes 引擎，Hermes Agent 驱动。Studio 端口 3071（已 patch 为 0.0.0.0 允许远程访问）。启动命令：export PATH="/home/miao/.hermes/node/bin:$PATH" && cd /home/miao/html-video && node packages/cli/dist/bin.js studio --port 3071。pnpm 在 /home/miao/.hermes/node/bin/pnpm。注意：Studio 进程偶尔会僵住（Chromium/playwright 后台初始化卡住），卡住时 kill 掉重启即可。
 §
 多角色AI团队：default=我(总负责)；wenan=文案；jike=极客；lvyou=旅游；zhidu=制度；sheji=设计师(海报/修图/视觉)出图→/home/miao/出图/。路由：wenan←报告/公文；lvyou←行程/美食；jike←脚本/运维；zhidu←制度/考核；sheji←设计/修图。
@@ -16,4 +14,10 @@ GitHub全墙(SSH/HTTPS git不可用,仅HTTP)。灾备走本地tar(~/.hermes/scri
 §
 智能家居自动路由：无论当前profile，老缪在微信/飞书发家居指令时直接执行。识别词：温度/湿度/空气质量、扫地/机器人/回充/清扫、窗帘/开关/打开关闭、灯/灯光、空调/制冷/制热、家电状态。全部走HA API(localhost:8123,token→~/.ha_token)。dreame扫地机用dreame_vacuum集成(Dreamehome云)。
 §
-贵州自驾游v5(2026.07.18-25):一家三口南京⇌贵阳。环线:贵阳→安顺→黄果树(西门)→织金洞→乌蒙草原→遵义→茅台→赤水(2晚)→贵阳。Day4最长3.5h。全程~1350km。HTML:/home/miao/贵州自驾游-v4.html。预约:黄果树7.19西门/织金洞7.20/遵义会址7.21。偏好:1大床+1双床≥1.35m,新酒店优先,不推狗肉,先紧后松。
+Hermes Provider配置铁律:GLM用内置`zai`(非`custom:zhipu`)。`${GLM_API_KEY}`不解析须硬编码。在providers.zhipu段直接写完整key值。WebUI灰按钮+模型下拉空=provider/config问题。Gateway restart因drain挂住→`sudo kill -9 PID`。
+§
+Jellyfin:8097（端口被Tailscale占用，从8096改为8097）。媒体目录 /home/miao/1tb-data/nas/media/movies/ 已挂载到容器。
+§
+用户偏好：能用现有系统就不重装。换OS代价大，优先在现有Ubuntu+Docker基础上扩展。
+§
+HomeKit Bridge 防火墙配置：需要开放 21064-21070/tcp（HomeKit Bridge 端口）和 5353/udp（mDNS/Bonjour）。ufw 命令：sudo ufw allow 21064:21070/tcp comment 'HomeKit Bridge' && sudo ufw allow 5353/udp comment 'mDNS'

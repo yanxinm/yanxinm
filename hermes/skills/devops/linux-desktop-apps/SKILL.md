@@ -184,6 +184,74 @@ mpv --vo=gpu --hwdec=auto <file>  # Hardware-accelerated playback
 - **Apt mirror 403**: If a configured mirror (e.g., Tsinghua) returns 403 for certain suites, switch to `http://cn.archive.ubuntu.com/ubuntu/` in `/etc/apt/sources.list.d/ubuntu.sources`.
 - **libdvd-pkg needs manual reconfigure**: The package builds libdvdcss from source at reconfigure time — not during install. Always run `sudo dpkg-reconfigure libdvd-pkg` after install.
 
+## 4. Native Linux Apps (deb/rpm)
+
+### 4.1 Download from slow CDNs with aria2c
+
+Many Chinese software vendors (Tencent, DingTalk) host .deb/.rpm on CDNs with poor international connectivity. Single-threaded curl/wget can be extremely slow (~100KB/s). Use aria2c for multi-threaded download:
+
+```bash
+# Install aria2
+sudo apt install -y aria2
+
+# Multi-threaded download (16 connections)
+aria2c -x 16 -s 16 -o /tmp/app.deb "https://cdn.example.com/app_x86_64.deb"
+
+# Typical speedup: 100KB/s → 1+MB/s
+```
+
+### 4.2 Find official download URLs from flathub
+
+When official download pages are dynamically loaded (React/SPA) and curl can't extract the URL, check the flathub GitHub repo:
+
+```bash
+# flathub maintains .deb URLs in their manifest YAML
+curl -sL "https://raw.githubusercontent.com/flathub/com.tencent.wemeet/master/com.tencent.wemeet.yml" \
+  | grep -E "url:.*updatecdn.*\.deb"
+
+# Example output:
+# url: https://updatecdn.meeting.qq.com/cos/xxx/TencentMeeting_xxx_x86_64.deb
+# url: https://updatecdn.meeting.qq.com/cos/xxx/TencentMeeting_xxx_arm64.deb
+```
+
+Pattern: `https://github.com/flathub/com.<vendor>.<app>/blob/master/com.<vendor>.<app>.yml`
+
+### 4.3 Install deb and fix library paths
+
+Apps installed to `/opt/` may fail with `libxxx.so: cannot open shared object file`:
+
+```bash
+# Install the deb
+sudo dpkg -i /tmp/app.deb
+
+# If library error occurs, add lib path to ldconfig
+sudo sh -c 'echo "/opt/<appname>/lib" > /etc/ld.so.conf.d/<appname>.conf'
+sudo ldconfig
+
+# Verify all dependencies resolved
+ldd /opt/<appname>/bin/<binary> | grep "not found" || echo "All dependencies satisfied"
+```
+
+### 4.4 Run and verify
+
+```bash
+# Check installation
+dpkg -L <package-name> | grep -E "(bin|desktop)"
+
+# GUI apps won't run headless — test from desktop session
+# Application menu entry should be in: /usr/share/applications/
+
+# Verify .desktop file
+cat /usr/share/applications/<app>.desktop | grep Exec
+```
+
+### Known apps with this pattern
+
+| App | Flathub repo | Notes |
+|-----|--------------|-------|
+| 腾讯会议 (Tencent Meeting) | `flathub/com.tencent.wemeet` | Wayland screenshare may need workaround |
+| 钉钉 (DingTalk) | Check AUR/flatpak | Similar CDN issues |
+
 ## Pitfalls
 
 - **`spawn X ENOENT`**: App hardcoded Windows `.exe` path → fix cross-platform detection
@@ -192,3 +260,7 @@ mpv --vo=gpu --hwdec=auto <file>  # Hardware-accelerated playback
 - **`bus.cc(407)`**: No D-Bus session → set env vars §1.5
 - **`cannot open display: :0`**: Shell started without DISPLAY → check `echo $DISPLAY`
 - **`GetVSyncParametersIfAvailable() failed`**: GPU compositor quirk, non-fatal warning
+- **`libxxx.so: cannot open shared object file`**: App installed to `/opt/` but library path not in ldconfig → add to `/etc/ld.so.conf.d/` and run `ldconfig`
+- **Slow CDN download (<200KB/s)**: Single-threaded curl hitting rate limit or poor routing → use `aria2c -x 16 -s 16` for 5-10x speedup
+- **Dynamic download page, no URL visible**: Official site uses SPA → fetch URL from flathub GitHub manifest
+- **`dpkg-deb: liblzma.so.5: version XZ_5.4 not found`**: 腾讯会议等安装在 `/opt/` 的应用自带旧版 liblzma，被系统 dpkg-deb 错误加载导致 apt 安装失败。修复：`sudo mv /opt/wemeet/lib/liblzma.so.5 /opt/wemeet/lib/liblzma.so.5.bak`，安装完成后再恢复（或删除备份，腾讯会议有自己的 bundled lib）

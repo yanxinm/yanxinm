@@ -12,7 +12,7 @@ tags: [profiles, multi-agent, kanban, routing, team, orchestration]
 
 ## ⚡ 新增：给已有团队加新成员的工作流
 
-*参考文件: `references/soul-conventions.md`（SOUL 写作规范）, `references/team-roster.md`（全员花名册）*
+*参考文件: `references/soul-conventions.md`（SOUL 写作规范）, `references/team-roster.md`（全员花名册）, `references/chinese-llm-provider-setup.md`（国产模型配置——智谱/豆包/DeepSeek）*
 
 当用户说"给团队增加一个小伙伴"时，按以下步骤走：
 
@@ -66,11 +66,32 @@ cp -r ~/.hermes/profiles/jike/skills/apikey-image-gen ~/.hermes/profiles/<name>/
 | 出图失败 → 缺 fun-codex provider | config.yaml 没加 custom_providers |
 | memory 满了加不进路由 | 先合并精简已有条目 |
 
-## Profile 模型统一约定
+## Profile 模型配置
 
-**所有 profile（default/jike/wenan/lvyou/zhidu/sheji）文本对话统一使用 agnes-2.0-flash（custom:agnes-ai）。**
-- sheji 特殊：文本走 agnes，image_gen toolset 走 fun-codex provider 调用 gpt-image-2 出图。
-- 切换方式：`patch` config.yaml 的 `model.default` 和 `model.provider` 字段。
+**模型统一切换方式**：`patch` config.yaml 的 `model.default` 和 `model.provider` 字段。
+
+```bash
+# 批量切换所有 profile 的模型
+for p in default jike lvyou wenan zhidu sheji; do
+  hermes config set model.default <model_name> --profile $p
+  hermes config set model.provider custom:<provider_name> --profile $p
+done
+```
+
+**sheji 特殊配置**：文本走主模型，image_gen toolset 需保留 fun-codex provider 调用 gpt-image-2 出图。
+
+## Pitfalls
+
+| 问题 | 解决 |
+|------|------|
+| `--clone` 失败 `shutil.Error` | skills 目录有断链，`find ~/.hermes/skills -xtype l -delete` |
+| Profile skills 不同步 | 默认 skills 更新后，其他 profile 的副本仍是旧版。共享 skills 用 symlink |
+| Gateway 只跑在 default | 其他 profile 的 gateway 需单独启动，一般不需要——任务通过总负责调用 |
+| Kanban dispatcher 不干活 | 检查 Gateway 是否在跑：`hermes gateway status` |
+| 角色没加载预期 skill | 调用时加 `-s <skill>` 参数强制加载 |
+| **Studio 显示模型为空** | config.yaml 缺 `model.default` 字段。检查：`grep "^  default:" ~/.hermes/profiles/<name>/config.yaml`，若无则添加 |
+| **custom_providers 401 错误** | `api_key: ${ENV_VAR}` 在 config.yaml 中不会被解析。必须直接写入完整 key：`api_key: xxx.yyy` |
+| **批量切换后配置文件损坏** | `hermes config set` 多次调用可能导致 config.yaml 被截断。批量操作后用 `cat ~/.hermes/config.yaml` 验证完整性 |
 
 ## Profile 切换原则
 

@@ -471,7 +471,45 @@ ERROR cron.scheduler: Job '<job_id>': delivery error: Weixin send failed: iLink 
 
 ---
 
-## 八、服务管理速查
+## 八、dpkg/apt 故障：腾讯会议 liblzma 冲突
+
+### 症状
+
+`apt install` 或 `dpkg -i` 失败，报错：
+```
+dpkg-deb: /opt/wemeet/lib/liblzma.so.5: version `XZ_5.4' not found (required by dpkg-deb)
+dpkg: 处理归档 xxx.deb (--unpack)时出错
+```
+
+### 根因
+
+腾讯会议（wemeet）安装了旧版本 `liblzma.so.5` 到 `/opt/wemeet/lib/`，该路径被加入 `LD_LIBRARY_PATH` 或被动态链接器优先加载，导致系统 dpkg 链接到不兼容的库版本。
+
+### 修复
+
+```bash
+# 检查冲突库
+ls -la /opt/wemeet/lib/liblzma.so.5*
+
+# 临时重命名（不影响腾讯会议运行，会使用系统库）
+sudo mv /opt/wemeet/lib/liblzma.so.5 /opt/wemeet/lib/liblzma.so.5.bak
+
+# 重试 apt install
+sudo apt install <package>
+
+# 如果已经备份过，删除符号链接
+sudo rm -f /opt/wemeet/lib/liblzma.so.5
+```
+
+### 注意
+
+- 此问题是**持久性的**——每次腾讯会议更新可能重新安装该库
+- 如果 apt 再次失败，重复上述修复
+- 不需要卸载腾讯会议
+
+---
+
+## 九、服务管理速查
 
 ```bash
 # Dashboard

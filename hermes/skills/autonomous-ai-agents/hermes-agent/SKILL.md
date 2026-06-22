@@ -118,13 +118,24 @@ done
 grep -A2 "^model:" ~/.hermes/config.yaml
 ```
 
-Use `patch` to change `model.default` and `model.provider` in each profile. Always verify after with:
+Use `hermes config set model.default MODEL --profile NAME` for each profile. Always verify after with:
 
 ```bash
-for p in default jike lvyou wenan zhidu sheji; do
-  echo "$p: "; head -3 ~/.hermes/profiles/$p/config.yaml 2>/dev/null | grep -A2 "^model:" || grep -A2 "^model:" ~/.hermes/config.yaml
-done
+hermes profile list
 ```
+
+⚠️ **PITFALL: `hermes config set` can truncate config.yaml to 3 lines** — if the file shrinks to ~3 lines after a batch update, the rest of the config (providers, toolsets, etc.) is lost. Rebuild the config from scratch or restore from backup. Always check `wc -l ~/.hermes/config.yaml` after batch updates. If truncated, recreate the full config with all providers, custom_providers, toolsets, and gateway settings.
+
+#### Batch-switch all profiles to new provider
+
+When switching ALL profiles to a new provider (e.g. GLM 5.2):
+
+1. **Test API key first** — verify connectivity with curl before touching any config
+2. **Add API key to `.env`** — `echo -e "\nGLM_API_KEY=***" >> ~/.hermes/.env`
+3. **Add custom provider to config.yaml** — ensure all 4 fields: name, base_url, api_key, model
+4. **Use `hermes config set` for each profile** — `hermes config set model.default MODEL --profile NAME`
+5. **Verify with `hermes profile list`** — check all profiles show the new model
+6. **Restart gateway** — `hermes gateway restart` (use background=true to avoid timeout)
 
 #### Mixed provider pattern (text vs image-gen)
 
@@ -887,6 +898,7 @@ the `write_file` + `cp + chmod` approach is the only reliable method.
 - **Tools/skills:** `/reset` starts a new session with updated toolset
 - **Config changes:** In gateway: `/restart`. In CLI: exit and relaunch.
 - **Code changes:** Restart the CLI or gateway process
+- **Config.yaml truncated to 3 lines:** If `wc -l ~/.hermes/config.yaml` returns ~3 after a batch update, the config was corrupted. Rebuild the full config with all providers, custom_providers, toolsets, gateway settings, and model config. Always verify `wc -l` before and after batch operations.
 
 ### Skills not showing
 1. `hermes skills list` — verify installed
@@ -1075,6 +1087,7 @@ hermes config set auxiliary.vision.model <model_name>
 | CLIProxyAPI installation & config | `references/cliproxyapi-setup.md` — WSL install via ghproxy mirror, minimal config.yaml, OAuth login, Hermes custom_provider integration |
 | Hermes services watchdog | `references/hermes-watchdog-setup.md` — cron-based auto-restart for TDAI Gateway + Hermes Gateway, EPIPE crash diagnosis, manual recovery |
 | API relay provider (中转站) setup | `references/api-relay-provider-setup.md` — model discovery, text/vision/image-gen testing, Hermes custom_provider config, client-side key protection |
+| Batch profile model switch | `references/batch-profile-model-switch.md` — config.yaml truncation pitfall, recovery steps, prevention |
 | Config key truncation debugging | `references/config-api-key-truncation-debug.md` — yaml.safe_load() display truncation, hex extraction trick, one-liner diagnosis |
 
 ---
@@ -1207,6 +1220,7 @@ Open web UI: `hindsight-embed -p hermes ui start`
 | iLink rate limiting | `references/cron-delivery-wechat.md` — WeChat bridge throttles verbose cron outputs; diagnosis + mitigation |\n| Ark image generation | `scripts/ark-image-gen.sh` — 火山引擎 Seedream image gen helper; also see `references/chinese-llm-provider-configs.md` |
 | TDAI bulk embedding | `scripts/tdai-bulk-embed.cjs` — compute vectors for l1_records missing from l1_vec; uses NVIDIA NIM via node:sqlite + sqlite-vec |
 | TDAI bulk embedding | `scripts/tdai-bulk-embed.mjs` — compute vectors for l1_records missing from l1_vec; uses NVIDIA NIM via node:sqlite + sqlite-vec |
+| SkillSpector setup | `references/skillspector-setup.md` — NVIDIA skill security scanner, installation, usage, China network pitfalls |
 | Feishu bot group join | `references/feishu-bot-group-join.md` — custom app bot not found in group, Open Platform config |\n| Feishu doc reading via API | `references/feishu-doc-api-workaround.md` — workaround when feishu_doc tool is unavailable outside comment context; tenant auth + docx/v1 blocks API + pagination |\n| WSL OOM prevention | `references/wsl-oom-prevention.md` — swap setup, .wslconfig, hindsight memory optimization, diagnosis |\n| Gateway logs
 | Session files | `~/.hermes/sessions/` or `hermes sessions browse` |
 | Source code | `~/.hermes/hermes-agent/` |

@@ -15,6 +15,14 @@ M710q Ubuntu 基地（`miao-thinkcentre-m710q-n080`）的远程访问、网络�
 
 ---
 
+## NAS 与媒体服务器方案
+
+存储系统选型、媒体服务器（Jellyfin/Emby/Plex/Navidrome）对比、基地硬件适配度分析见 [`references/nas-media-server-comparison.md`](references/nas-media-server-comparison.md)。包含 QuickSync 转码能力评估和推荐部署方案。
+
+Navidrome 音乐服务器部署模板见 [`templates/navidrome-docker-compose.yml`](templates/navidrome-docker-compose.yml)。
+
+---
+
 ## Home Assistant on the base
 
 When operating the base-machine Home Assistant Docker stack, use the following reference. HA Docker/compose shape, API proxy pattern, Bluetooth/AppArmor fix (`privileged: true` + D-Bus mount), HA token/auth pitfalls, and config-flow inspection commands.
@@ -729,7 +737,15 @@ for p in d.get('Peer',{}).values():
 | 调度 | 周六+周日 12:00 | 双保险，命中周末在家的概率 |
 | 容错 | 中继时静默跳过 | 不报错，等下一轮直连 |
 
-## 十二、aria2c 后台下载注意事项
+## 十二、Jellyfin 媒体服务器
+
+Jellyfin Docker 容器运维详见 [`references/jellyfin-docker-ops.md`](references/jellyfin-docker-ops.md)。包含卷挂载映射、媒体文件添加流程（下载目录→媒体库）、权限修复、跨设备复制用 rsync 而非 mv/cp 的原因等。
+
+关键点：媒体文件必须放入 Docker 挂载的宿主机路径（如 `~/1tb-data/nas/media/movies/`），下载目录默认不在挂载范围内。
+
+---
+
+## 十三、aria2c 后台下载注意事项
 
 aria2c 后台下载 BT 种子时，`process poll` 可能泄漏二进制垃圾（tracker 响应中的非 UTF-8 数据）和大量 ANSI 进度条刷屏。**必须**加 `--console-log-level=warn` 和 `2>/dev/null`，poll 时只取最后一行。详见 [`references/aria2c-background-binary-garbage.md`](references/aria2c-background-binary-garbage.md)。
 
