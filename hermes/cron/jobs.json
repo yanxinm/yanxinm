@@ -174,7 +174,7 @@
       "schedule_display": "10 8 * * *",
       "repeat": {
         "times": null,
-        "completed": 8
+        "completed": 9
       },
       "enabled": true,
       "state": "scheduled",
@@ -182,9 +182,9 @@
       "paused_reason": null,
       "created_at": "2026-06-06T16:17:51.326526+08:00",
       "next_run_at": "2026-06-23T08:10:00+08:00",
-      "last_run_at": "2026-06-21T08:12:23.934138+08:00",
-      "last_status": "ok",
-      "last_error": null,
+      "last_run_at": "2026-06-22T08:12:48.095511+08:00",
+      "last_status": "error",
+      "last_error": "Script timed out after 120s: /home/miao/.hermes/scripts/hermes_backup.sh",
       "last_delivery_error": null,
       "deliver": "weixin",
       "origin": null,
@@ -292,17 +292,17 @@
       "schedule_display": "every 2m",
       "repeat": {
         "times": null,
-        "completed": 3761
+        "completed": 3762
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-06-06T16:17:53.039117+08:00",
-      "next_run_at": "2026-06-22T08:12:46.093266+08:00",
-      "last_run_at": "2026-06-22T08:10:46.093266+08:00",
+      "next_run_at": "2026-06-22T08:15:46.124342+08:00",
+      "last_run_at": "2026-06-22T08:13:46.124342+08:00",
       "last_status": "error",
-      "last_error": "Script exited with code 1\nstderr:\n/home/miao/.hermes/scripts/watchdog.sh: \u7b2c 31 \u884c\uff1a cd: /home/yanxin/Hermes-Agent: \u6ca1\u6709\u90a3\u4e2a\u6587\u4ef6\u6216\u76ee\u5f55\nstdout:\n[2026-06-22 08:10:45] \u26a0\ufe0f Hermes Gateway \u672a\u8fd0\u884c\uff0c\u6b63\u5728\u91cd\u542f...\n[2026-06-22 08:10:45] \u274c \u65e0\u6cd5\u8fdb\u5165 Hermes-Agent",
+      "last_error": "Script exited with code 1\nstderr:\n/home/miao/.hermes/scripts/watchdog.sh: \u7b2c 31 \u884c\uff1a cd: /home/yanxin/Hermes-Agent: \u6ca1\u6709\u90a3\u4e2a\u6587\u4ef6\u6216\u76ee\u5f55\nstdout:\n[2026-06-22 08:13:46] \u26a0\ufe0f Hermes Gateway \u672a\u8fd0\u884c\uff0c\u6b63\u5728\u91cd\u542f...\n[2026-06-22 08:13:46] \u274c \u65e0\u6cd5\u8fdb\u5165 Hermes-Agent",
       "last_delivery_error": null,
       "deliver": "local",
       "origin": null,
@@ -511,5 +511,5 @@
       "profile": "wenan"
     }
   ],
-  "updated_at": "2026-06-22T08:10:46.093456+08:00"
+  "updated_at": "2026-06-22T08:13:46.124547+08:00"
 }

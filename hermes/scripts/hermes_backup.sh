@@ -47,12 +47,12 @@ tar -czf "$LOCAL_TAR" -C "$REPO_DIR" hermes/ 2>/dev/null || true
 # 9. 拷贝到外接硬盘
 cp "$LOCAL_TAR" /media/miao/seagate-1tb/hermes-backup/ 2>/dev/null || true
 
-# 10. 推 GitHub（超时 30 秒，失败不阻塞）
-export GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30"
+# 10. 推 GitHub（timeout 30 秒，墙内超时不阻塞）
+export GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15"
 git add -A 2>/dev/null || true
 if ! git diff --cached --quiet 2>/dev/null; then
     git commit -m "hb: $DATE_TAG" --quiet 2>/dev/null || true
-    PUSH_OUT=$(git push origin main 2>&1) && PUSH_EXIT=0 || PUSH_EXIT=$?
+    PUSH_OUT=$(timeout 25 git push origin main 2>&1) && PUSH_EXIT=0 || PUSH_EXIT=$?
     if [ "$PUSH_EXIT" -eq 0 ]; then
         SIZE=$(du -sh "$BACKUP_DIR" | cut -f1)
         echo "hermes-backup: $DATE_TAG OK - GitHub 已同步 (${SIZE})"
