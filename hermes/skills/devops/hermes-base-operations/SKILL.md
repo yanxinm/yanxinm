@@ -92,6 +92,7 @@ curl -s https://<ts-net域名>/api/status \
 | 401 Unauthorized | Token 未注入或过期 | 固化 token 到 .env |
 | "Timed out...8000ms" | Funnel 指向了 8648（Node SPA） | 改指 9119 |
 | "Timed out...15000ms"（模型页） | WebSocket 端点 404 | 正常——切到对话页即可 |
+| **Desktop 连 Funnel URL 后反复报 \\"404: Not Found\\" 或 \\"Cached remote Hermes backend failed liveness probe\\"** | **Funnel 指向 Dashboard（9119），根路径返回 HTML 页面。Desktop 的 liveness 探针是 HTTP GET 请求 `/` 预期收到 JSON/API 响应但拿到 HTML → 探针失败 → 重试 → 同结果。"Cached remote..." 表示 WebSocket 曾短暂连上（"Remote is ready"）但随后的 HTTP 探针因拿到 HTML 而非 API JSON 而拒绝连接。** | **浏览器访问 Funnel URL 能打开但 Desktop 连不上时，优先改用 Tailscale 直连 IP `http://100.86.13.11:9119`（无 auth 不须 token）绕过 Funnel。如果必须走 Funnel，确保 Dashboard 的 API 端点（如 `/api/status`、`/api/ws`）能正确响应 JSON/WebSocket，而不是纯 HTML。检查方式：`curl https://<funnel-url>/api/status` 应返回 JSON 而非 HTML。** |
 | Dashboard 重启后被 Gateway 覆盖 | Gateway 自动重启 Dashboard 用原参数 | 先 gateway stop → 手动 dashboard start → gateway start |
 
 ---
@@ -520,12 +521,33 @@ hermes dashboard --port 9119 --host 0.0.0.0 --insecure --no-open --skip-build  #
 # Gateway
 hermes gateway status               # 查看状态
 hermes gateway restart              # 重启
-
-# Tailscale Funnel
+```bash
+# Tailscale Funnel（新版 CLI）
 tailscale serve status              # 查看
-sudo tailscale funnel --bg <port>   # 切换到新端口
+tailscale funnel status --json      # JSON 格式查看（推荐，信息更完整）
+tailscale funnel --bg --https=443 http://127.0.0.1:<port>   # 切换到新端口（新版语法）
+tailscale funnel reset              # 重置所有 Funnel 规则
+tailscale serve --bg <port>         # 仅 tailnet 内网暴露（不加 --https=443 的简化版）
 
 # 全链路自启验证
 sudo reboot
 # 等 2 分钟，微信发消息 → 有回复即成功
 ```
+
+### Gateway 重启的坑
+
+**问题**：在 Gateway 进程内执行 `sudo systemctl restart hermes-gateway` 或 `hermes gateway restart` 都会被拦截（SIGTERM 传播到子进程导致命令被杀）。
+
+**解法**：写延时脚本到 `/tmp/`，在后台执行：
+
+```bash
+cat > /tmp/rgw.sh << 'EOF'
+#!/bin/bash
+sleep 2
+systemctl restart hermes-gateway
+EOF
+chmod +x /tmp/rgw.sh
+bash /tmp/rgw.sh &
+```
+
+等待约 10 秒后 Gateway 自动重启，会话断开后重新连接。

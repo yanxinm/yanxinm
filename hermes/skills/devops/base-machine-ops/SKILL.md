@@ -1,6 +1,6 @@
 ---
 name: base-machine-ops
-description: M710q Ubuntu 基地运维——远程访问（Tailscale/Funnel/SSH隧道）、网络诊断、GitHub被墙下载、端口管理、pnpm环境。
+description: M710q Ubuntu 基地运维——远程访问（Tailscale/Funnel/SSH隧道）、网络诊断、GitHub加速（FastGithub/ghproxy）、端口管理、pnpm环境。
 category: devops
 tags: [基地, Tailscale, Funnel, 远程访问, GitHub加速, 端口管理]
 ---
@@ -126,6 +126,54 @@ ssh -L 8648:127.0.0.1:8648 miao@100.86.13.11
 
 ---
 
+## 一之补充 C：基地网络性能基线
+
+### 实际测速数据
+
+基地接 **中国移动 1000M 全光宽带**，WiFi 5GHz（协商 288 Mbps）连接路由器 `192.168.1.1`。以下为 2026-06 实测：
+
+| 测试条件 | 下载 | 上传 | 备注 |
+|---------|:----:|:----:|------|
+| **Cloudflare WARP 开启** | ~11 Mbps | **~1.3 Mbps** | 默认状态，所有流量经 WARP 加密隧道绕境外出站 |
+| **WARP 关闭** | ~18 Mbps (Cloudflare) / **~149 Mbps (国内阿里云镜像)** | **~7.5 Mbps** (Cloudflare) / 预计更高(国内) | 上传 5x 提升 |
+| 内网（ping 路由器） | — | — | 延迟 3.2ms，丢包 0% |
+
+### 关键发现：Cloudflare WARP 是基地最大减速器
+
+**WARP 开启时**，基地所有流量经 Cloudflare 的境外节点加密隧道绕行。在中国移动网络下，此隧道严重降速（上传从 7.5 Mbps 降至 1.3 Mbps），原因包括：
+- Cloudflare 与中国移动的跨境 peering 带宽有限
+- WARP 加密/隧道开销
+- 流量被路由到海外节点再回国内
+
+**结论**：WARP 对办公网络的私有服务（绕过防火墙）有用，但对基地纯属降速。基地不应长期运行 WARP。
+
+### 远程串流可行性
+
+基地上传 ~7.5 Mbps（WARP 关闭时）：
+
+| 清晰度 | 所需带宽 | 基地能否 | 体验 |
+|--------|---------|:--------:|------|
+| 480p | 1-2 Mbps | ✅ 轻松 | 流畅 |
+| 720p | 3-5 Mbps | ✅ 可看 | 流畅 |
+| 1080p | 5-8 Mbps | ⚠️ 边界 | 偶有缓冲 |
+| 4K | 15+ Mbps | ❌ 不行 | — |
+
+### 优化建议
+
+1. **禁用 WARP**：立即提升上传 5x，是最有效的免费优化
+2. **开启 Jellyfin 硬件转码**（QuickSync HD Graphics 530）：强制压到低码率
+3. **国内轻量云 VPS 中转**（30-50元/月）：VPS 通过 Tailscale 连基地，用户端连 VPS
+4. **网线优先**（千兆口）：WiFi 协商 288Mbps 够用，但有线更稳定
+
+### 基地宽带基础信息
+
+- ISP：中国移动
+- 套餐：1000M 全光组网
+- 连接方式：WiFi 5GHz（`1804-5G`），网口未插线（`enp0s31f6: NO-CARRIER`）
+- WiFi 协商速率：288.2 Mbps（802.11ac, 2-stream）
+- 内网网关：192.168.1.1（延迟 3.2ms）
+- CloudflareWARP 接口：存在但应关闭
+
 ## 二、Tailscale 网络诊断
 
 ```bash
@@ -148,7 +196,70 @@ tailscale ping 100.86.148.56                 # 基地→笔记本
 
 基地网络：`github.com` 超时，`api.github.com` 可达。
 
-### 3.1 Git 全局代理（推荐，一劳永逸）
+### 3.1 FastGithub 本地代理（推荐，全局生效）
+
+FastGithub 是 GitHub 加速工具，监听 `127.0.0.1:38457` 作为 HTTP 代理，自动加速所有 GitHub 流量。比 ghproxy 更稳定（不依赖第三方服务）。
+
+#### 安装
+
+```bash
+# v2.1.4 修复版（Gitee，修复了 Linux 崩溃 bug；creazyboyone v2.1.5 的 ProductionVersion.Parse 会崩溃）
+curl -sSL -o /tmp/fastgithub-2.1.4.zip \
+  "https://gitee.com/XingYuan55/FastGithub/releases/download/2.1.4-repaired/fastgithub_linux-x64.zip"
+unzip -q /tmp/fastgithub-2.1.4.zip -d ~/fastgithub_tmp
+mv ~/fastgithub_tmp/fastgithub_linux-x64 ~/fastgithub
+mkdir -p ~/fastgithub/cacert ~/fastgithub/logs
+chmod +x ~/fastgithub/fastgithub
+```
+
+#### 启动
+
+```bash
+# 前台运行
+~/fastgithub/fastgithub
+
+# 后台运行
+nohup ~/fastgithub/fastgithub > ~/fastgithub/logs/output.log 2>&1 &
+```
+
+#### Git 代理配置
+
+```bash
+git config --global http.proxy http://127.0.0.1:38457
+git config --global https.proxy http://127.0.0.1:38457
+git config --global http.sslverify false    # FastGithub 自签证书
+```
+
+#### 验证
+
+```bash
+curl -sS -o /dev/null -w "%{http_code}" https://github.com/  # 应返回 200
+git ls-remote https://github.com/<owner>/<repo>.git HEAD      # 应返回 commit hash
+```
+
+#### 已知 Bug：creazyboyone v2.1.5 Linux 崩溃
+
+**症状**：运行 `fastgithub` 后 HTTP 代理短暂监听 38457，然后崩溃：
+```
+Unhandled exception. System.TypeInitializationException:
+  The type initializer for 'FastGithub.ProductionVersion' threw an exception.
+  ---> System.IndexOutOfRangeException: Index was outside the bounds of the array.
+```
+
+**根因**：`ProductionVersion.Parse(String)` 在解析此 fork 的版本字符串时数组越界。
+
+**修复**：使用 Gitee 上的 **v2.1.4 修复版**（`XingYuan55/FastGithub`，明确标注「修复非windows平台启动后可能异常而停止的问题」）。下载命令见上方「安装」部分。
+
+**验证**：
+```bash
+~/fastgithub/fastgithub  # 应看到 "FastGithub启动完成，当前版本为v2.1.4" 而非崩溃
+```
+
+#### systemd 服务化（可选）
+
+由于此二进制在 systemd 环境下可能核心转储，建议用 cron 兜底或后台 nohup 方式运行。
+
+### 3.2 Git 全局代理（备用方案，ghproxy）
 
 ```bash
 # ghproxy.net 已验证可用，ghproxy.com 已失效
@@ -157,7 +268,7 @@ git config --global url."https://ghproxy.net/https://github.com/".insteadOf "htt
 # 恢复直连：git config --global --unset url."https://ghproxy.net/https://github.com/".insteadOf
 ```
 
-### 3.2 其他方案
+### 3.2 Git 全局代理（备用方案，ghproxy）
 
 ```bash
 # tarball 下载（绕过 git clone）
@@ -793,3 +904,22 @@ python3 ~/.hermes/skills/<skill-name>/scripts/cli.py doc  # 或对应入口命�
 | 文档 | https://anysearch.com/docs |
 
 AnySearch 提供 `search`、`batch_search`、`extract`、`get_sub_domains` 四个命令，覆盖通用搜索（含中文）、16 个垂直领域（金融/旅行/代码/学术等）、并行批量搜索和网页内容提取。
+
+### 13.A npx skills add 生态（Vercel Agent Skills）
+
+[`npx skills add`](https://github.com/vercel-labs/agent-skills) 是 Vercel 的 Agent Skills 安装工具，适用于已发布到该生态的仓库（如 taste-skill）。
+
+**安装：**
+```bash
+# 全部技能
+npx skills add https://github.com/Leonxlnx/taste-skill --yes
+
+# 单个
+npx skills add https://github.com/Leonxlnx/taste-skill --skill "design-taste-frontend"
+```
+
+**流程：** Clone 仓库 → 扫描 `skills/` 目录 → 自动检测 Hermes Agent → 解压到 `~/.agents/skills/<name>/` → **自动创建符号链接** `~/.hermes/skills/<name>` → `../../.agents/skills/<name>` → 运行安全审计。
+
+**验证：** `skill_view('<install-name>')` 确认 readiness_status。新 session 后 `skills_list` 可看到。
+
+详见 [`references/npx-skills-ecosystem.md`](references/npx-skills-ecosystem.md)。

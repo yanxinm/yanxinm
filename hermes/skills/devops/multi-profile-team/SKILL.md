@@ -68,17 +68,48 @@ cp -r ~/.hermes/profiles/jike/skills/apikey-image-gen ~/.hermes/profiles/<name>/
 
 ## Profile 模型配置
 
-**模型统一切换方式**：`patch` config.yaml 的 `model.default` 和 `model.provider` 字段。
+### 当前模型切换规则
+
+| 规则 | 值 |
+|------|-----|
+| 所有 profile 对话模型 | DeepSeek V4 Flash (`deepseek` provider) |
+| 看图（视觉分析） | Doubao (`ark-doubao` / `doubao-seed-1-6-vision-250815`) |
+| sheji 出图 | gpt-image-2（通过 `fun-codex` / `apikey-image-gen` 技能） |
+
+### 统一切换工作流
+
+**⚠️ 不要用 `patch` 修改主 config.yaml**——Hermes 安全拦截会拒绝。必须用 `hermes config set` CLI。
 
 ```bash
-# 批量切换所有 profile 的模型
-for p in default jike lvyou wenan zhidu sheji; do
-  hermes config set model.default <model_name> --profile $p
-  hermes config set model.provider custom:<provider_name> --profile $p
-done
+# 单独改一个 profile
+hermes config set model.default deepseek-v4-flash --profile sheji
+hermes config set model.provider deepseek --profile sheji
+
+# 主配置（no --profile = default）
+hermes config set model.default deepseek-v4-flash
+hermes config set model.provider deepseek
+hermes config set auxiliary.vision.provider ark-doubao
+hermes config set auxiliary.vision.model doubao-seed-1-6-vision-250815
 ```
 
-**sheji 特殊配置**：文本走主模型，image_gen toolset 需保留 fun-codex provider 调用 gpt-image-2 出图。
+如果改 profile 的 `config.yaml`，注意行边界——`model:` 块后面跟的是 `mcp_servers:` 或 `providers:`，`patch` 替换时容易把相邻的 section header 误覆盖。
+
+### 配置生效
+
+改完必须重启 Gateway。但 **从 gateway 进程内无法执行重启命令**（SIGTERM 会传播到子进程）。需通过延时脚本在后台执行：
+
+```bash
+# 写延时重启脚本到 /tmp/
+cat > /tmp/rgw.sh << 'EOF'
+#!/bin/bash
+sleep 2
+systemctl restart hermes-gateway
+EOF
+chmod +x /tmp/rgw.sh
+
+# 在后台执行（当前会话会断开，重启后恢复）
+bash /tmp/rgw.sh &
+```
 
 ## Pitfalls
 
@@ -91,7 +122,11 @@ done
 | 角色没加载预期 skill | 调用时加 `-s <skill>` 参数强制加载 |
 | **Studio 显示模型为空** | config.yaml 缺 `model.default` 字段。检查：`grep "^  default:" ~/.hermes/profiles/<name>/config.yaml`，若无则添加 |
 | **custom_providers 401 错误** | `api_key: ${ENV_VAR}` 在 config.yaml 中不会被解析。必须直接写入完整 key：`api_key: xxx.yyy` |
+| **Profile 后台被闲置回收，长任务静默死** | Hermes 在 profile backend 空闲 >600 秒后自动 reap（kill）掉该进程。运行中的出图/推理/下载任务被静默中断，无报错。解法：(A) 长任务用 cron 指定 `profile` 参数跑；(B) 调大 profile 的 idle timeout（`hermes config set profile.<name>.idle_timeout 3600`）；(C) 切回 default profile 执行 |
 | **批量切换后配置文件损坏** | `hermes config set` 多次调用可能导致 config.yaml 被截断。批量操作后用 `cat ~/.hermes/config.yaml` 验证完整性 |
+| **`patch` 工具改主 config.yaml 被拒** | Hermes 安全拦截不允许 agent 直接写 config.yaml。必须用 `hermes config set` CLI |
+| **profile config.yaml 修改时误改相邻段** | `model:` 块之后可能是 `mcp_servers:` 或 `providers:`，`patch` 替换 model 块时注意不要覆盖相邻的 section header。修改后检查文件完整性 |
+| **Gateway 无法在进程内重启** | `sudo systemctl restart hermes-gateway` 和 `hermes gateway restart` 都被拦截（SIGTERM 传播）。解决方法：写延时脚本到 `/tmp/`，在后台执行 `bash /tmp/rgw.sh &` |
 
 ## Profile 切换原则
 
@@ -164,7 +199,7 @@ Profile 的 skills 在 `~/.hermes/profiles/<name>/skills/` 目录。`--clone` �
 
 **注意**：clone 后各 profile 的 skills 是独立副本，更新 default skill 不会自动同步。如需共享，可用 symlink 替代副本。
 
-### Step 4: 初始化 Kanban
+### Step 5: 初始化 Kanban
 
 ```bash
 hermes kanban init
@@ -173,9 +208,65 @@ hermes kanban init
 
 Gateway 内置调度器每 60 秒 tick 一次，自动分配就绪任务。
 
-### Step 5: 设置 Cron 分工
+## 给已有 Profile 添加技能（增量扩展）
 
-每个 cron job 可指定 `profile` 参数，让定时任务以特定角色执行：
+当老缪说"这个技能应该给到XX profile，安排工作时调用"时，按以下步骤执行：
+
+### Step 1: 复制技能到目标 profile
+
+```bash
+# 从全局 skills 目录复制到 profile 的 skills 目录
+cp -r ~/.hermes/skills/<skill-name> ~/.hermes/profiles/<profile>/skills/
+```
+
+⚠️ Profile 的 skills 目录放的是**独立副本**，不是 symlink。后续全局 skill 更新不会自动同步到 profile。
+
+### Step 2: 更新 SOUL.md，在工作流中引用该技能
+
+编辑 `~/.hermes/profiles/<profile>/SOUL.md`，在相关流程步骤中加入 skill 加载指令。
+
+示例（将 taste-image-gen 加入 sheji 的出图流程）：
+
+```markdown
+## 你的出图流程
+
+1. 理解需求后，先用文字描述画面构思让老缪确认
+2. **调用 `taste-image-gen` 技能** — 执行「设计读」判定（图种/受众/风格/色系/留白），设定三旋钮
+3. 确认设计读后调用出图引擎
+4. 出图后主动展示结果，询问是否需要调整
+```
+
+同时更新「你的资源」清单和「工作纪律」，形成完整闭环：
+
+```markdown
+## 你的资源
+
+- **审美控制**：`taste-image-gen` 技能 — 每次出图前自动加载
+
+## 工作纪律
+
+- 出图前必须先加载 `taste-image-gen` 做设计读，不直接盲出
+```
+
+### Step 3: 验证
+
+```bash
+# 确认 skill 文件存在
+ls ~/.hermes/profiles/<profile>/skills/<skill-name>/SKILL.md
+
+# 确认 SOUL.md 已更新
+grep -n '<skill-name>' ~/.hermes/profiles/<profile>/SOUL.md
+```
+
+### 要点
+
+- **SOUL.md 修改后需要新会话才生效**（Gateway 模式需重启 Gateway）
+- skills 是独立副本：如果全局 skill 有更新，需要重新 copy
+- 不是所有 skill 都需要加到所有 profile——按职责加载，不盲塞
+
+---
+
+## 验证方法
 
 ```bash
 # 示例：每周一让文案扫描工作台账
@@ -273,12 +364,4 @@ hermes cron list
 hermes kanban ls
 ```
 
-## Pitfalls
-
-| 问题 | 解决 |
-|------|------|
-| `--clone` 失败 `shutil.Error` | skills 目录有断链，`find ~/.hermes/skills -xtype l -delete` |
-| Profile skills 不同步 | 默认 skills 更新后，其他 profile 的副本仍是旧版。共享 skills 用 symlink |
-| Gateway 只跑在 default | 其他 profile 的 gateway 需单独启动，一般不需要——任务通过总负责调用 |
-| Kanban dispatcher 不干活 | 检查 Gateway 是否在跑：`hermes gateway status` |
-| 角色没加载预期 skill | 调用时加 `-s <skill>` 参数强制加载 |
+<!-- 重复的 Pitfalls 表已合并到上方 Gateway 后的主 Pitfalls 区，此处删除以避免不一致。 -->

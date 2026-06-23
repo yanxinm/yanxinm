@@ -100,7 +100,50 @@ Sharp readable Chinese text. No watermarks.
 - 底部装饰用"subtle line art"不要太显眼
 - 明确说"No watermarks"
 
+## 2026-06-22 新发现：全中文 prompt + taste-skill 四风格验证
+
+### 背景
+用户要求用 taste-image-gen 的四个风格模板（小红书面包风/Ins旅行风/复古海报风/国潮扁平风）各出一版同款 Day 1 行程海报。之前 v3-v6 认为"gpt-image-2 中文文字不可靠，必须 PIL 代码排版"，本次验证推翻了这个结论。
+
+### 方法
+**全中文 prompt** — 整段提示词用纯中文写，详细描述每个行程节点的排版位置、颜色、图标。末尾加英文约束 `ALL CHINESE TEXT MUST BE ACCURATE`。
+
+示例 prompt 结构：
+```
+9:16竖版旅行行程海报 [风格描述]
+顶部: [问候语](字体颜色) [日期](小字颜色)
+中间时间线: [描述串联方式]
+[时间] [地点]([色块颜色])
+...
+底部: 天气[数据] 穿搭[建议]
+[装饰风格] 无英文无拼音
+NO watermark NO English text ALL CHINESE TEXT MUST BE ACCURATE
+```
+
+### 结果
+| 风格 | 文件 | 大小 | 中文准确率 |
+|------|------|------|-----------|
+| 小红书面包风 | Day1_01_xiaohongshu_bakery.jpg | 1.5MB | ✅ 全部正确 |
+| Ins旅行风 | Day1_02_ins_travel.jpg | 2.3MB | ✅ 全部正确 |
+| 复古海报风 | Day1_03_vintage_poster.jpg | 3.0MB | ✅ 全部正确 |
+| 国潮扁平风 | Day1_04_guochao_flat.jpg | 2.6MB | ✅ 全部正确 |
+
+所有中文字（含"浠岸酒店""夺夺粉""裹卷""顾府街""儒林路""虹山湖"等非常用字）均准确渲染。
+
+### 对之前规律的修正
+1. **全中文 prompt 优于英文 prompt** — 英文 prompt 里写中文词会被翻译/误读（浠岸→Xi An），全中文 prompt 反而准确
+2. **"ALL CHINESE TEXT MUST BE ACCURATE" 在末尾有效** — 作为安全网强制约束
+3. **无需 PIL 代码排版作为唯一方案** — 文生图在正确 prompt 策略下可以胜任，但需要 vision_analyze 验证
+4. **size 约束**：1024×1440 可以，但注意最低 655K 像素
+
+### 建议工作流
+1. 全中文写 prompt（不用英文/拼音替代中文词）
+2. 末尾加 `ALL CHINESE TEXT MUST BE ACCURATE NO English text`
+3. 生成后用 vision_analyze 逐字验证（酒店名/美食名/生僻字）
+4. 发现错字：修正 prompt 重试，不要退回到 PIL
+
 ## 相关文件
 - 拼合脚本：`templates/travel-poster-compose.py`
 - 信息图脚本：`templates/travel-poster-info.py`
+- taste-image-gen skill 四风格：`~/.hermes/skills/taste-image-gen/SKILL.md`
 - 主技能：`SKILL.md`

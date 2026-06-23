@@ -36,6 +36,81 @@ curl http://localhost:8642/v1/models
 - 但 `custom:zhipu` provider 不走自动查找逻辑，必须显式配置 api_key
 - `custom_providers` 段支持硬编码，不受此问题影响
 
+## 跨 Profile 模型统一切换
+
+### 场景
+
+需要将所有 Profile（jike、lvyou、sheji、wenan、zhidu 及 default）的默认模型改为同一个 provider。例如：从 GLM 全部切到 DeepSeek，视觉模型统一用 Doubao。
+
+### 操作步骤
+
+**1. 主配置文件（default profile）**
+
+用 `hermes config set` 修改 `~/.hermes/config.yaml`：
+
+```bash
+# 主模型
+hermes config set model.default "deepseek-v4-flash"
+hermes config set model.provider "deepseek"
+
+# 添加新 provider（需要先定义）
+hermes config set providers.ark-doubao.api "https://ark.cn-beijing.volces.com/api/v3"
+hermes config set providers.ark-doubao.api_key "<key>"
+hermes config set providers.ark-doubao.default_model "doubao-seed-1-6-vision-250815"
+
+# 视觉模型（各 profile 无独立 auxiliary 时继承主配置）
+hermes config set auxiliary.vision.provider "ark-doubao"
+hermes config set auxiliary.vision.model "doubao-seed-1-6-vision-250815"
+```
+
+**2. 各 Profile 配置文件**
+
+`hermes config set` 仅作用于 default profile。修改其他 profile 需直接编辑 `~/.hermes/profiles/<name>/config.yaml`：
+
+```yaml
+# 批量改模型
+model:
+  default: deepseek-v4-flash
+  provider: deepseek
+```
+
+| 修改项 | 文件 | 方式 |
+|--------|------|------|
+| 主模型 default | `~/.hermes/config.yaml` | `hermes config set` |
+| 主模型 vision | `~/.hermes/config.yaml` | `hermes config set` |
+| Profile 模型 | `~/.hermes/profiles/<name>/config.yaml` | 直接 patch 文件（注意保留后续的 `mcp_servers:`、`toolsets:` 等键） |
+| Profile vision | 无独立 auxiliary 时继承主配置 | 无需修改 |
+
+**3. 特殊情况处理**
+
+| Profile | 需要保留的配置 |
+|---------|---------------|
+| **sheji** | `custom_providers.fun-codex`（出图用 gpt-image-2）、`image_gen` toolset、`custom:fun-codex.stale_timeout_seconds: 300` |
+| **jike** | 原有的 provider 定义（ark/volces、fun-codex、agnes-ai 等）仍保留供技能调用，只改 `model.default` |
+
+**4. 验证**
+
+```bash
+for p in jike lvyou sheji wenan zhidu; do
+  echo "$p: $(grep -A1 "default:" ~/.hermes/profiles/$p/config.yaml | head -2 | tr '\n' ' ')"
+done
+# 正确输出：每个 profile 都显示 deepseek-v4-flash + deepseek
+```
+
+### 视觉模型继承规则
+
+- 如果 profile 的 `config.yaml` 中没有 `auxiliary.vision` 段，则继承主配置的 `auxiliary.vision` 设置
+- 如果 profile 有独立的 `auxiliary.vision`（如 jike profile），则以 profile 自身配置为准
+- 验证：`grep -A6 "auxiliary:" ~/.hermes/profiles/<name>/config.yaml`，无输出 = 继承主配置
+
+### 常见错误
+
+| 错误 | 原因 | 修复 |
+|------|------|------|
+| lvyou/wenan 等 profile 结构损坏 | 直接替换 `model:` 段时意外覆盖了后续的 `mcp_servers:` 键名 | patch 后检查结构：`grep -E '^(model|providers|mcp_servers|custom_providers):' config.yaml` |
+| `hermes config set` 被拒 | Agent 不能直接修改主 config.yaml（安全限制） | 用 `hermes config set` CLI 命令，或告知用户手动编辑 |
+| profile 视觉不生效 | profile 自己定义了空的 `auxiliary:` 段但无 `vision:` 子项 | 检查 `auxiliary:` 段是否存在，存在则需单独配置 |
+
 ## Gateway 重启阻塞
 
 ### 症状

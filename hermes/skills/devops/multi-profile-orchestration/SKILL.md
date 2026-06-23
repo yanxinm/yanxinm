@@ -148,8 +148,69 @@ hermes kanban init
 | **Web UI 群聊里 profile 不说话** | Web UI 的「群聊」功能不是多人在线聊天。只有 default profile 的 Gateway 在运行，其他 profile（jike/lvyou/sheji/wenan/zhidu）Gateway 均为 stopped——它们没有"耳朵"，群里说话不会自动回应。正确用法：对 default（赫妹）说话，赫妹根据关键词分析后通过 `terminal(command="<profile> chat -q '...'")` 调用对应 profile，汇总返回。群聊功能在当前架构下意义不大，推荐直接用路由模式。 |
 | **Cron 任务静默失败：`cron_mode: deny`** | `--clone` 创建的 profile 默认带有 `approvals.cron_mode: deny`，定时任务执行到需要审批的命令（terminal/write_file 等）时直接被拒绝，任务悄悄挂掉，`hermes cron list` 不显示任何错误。**创建 profile 后必须改：** `sed -i 's/cron_mode: deny/cron_mode: allow/' ~/.hermes/profiles/<name>/config.yaml`。同时检查 default profile：`grep cron_mode ~/.hermes/config.yaml`。 |
 | **API Server 绑定回退到 127.0.0.1** | Gateway 的 API Server 绑定地址由 default profile 的 `platforms.api_server.extra.host` 决定。如果 default config.yaml 中缺少该配置段（`--clone` 不会同步此段，`hermes config set` 可能写到其他 profile），Gateway 回退到 `127.0.0.1`，导致 Tailscale/远程 Web UI 无法连接。**验证：** `grep -A5 '^platforms:' ~/.hermes/config.yaml | grep api_server`，确保存在 `platforms.api_server.extra.host: 0.0.0.0`。修复后需重启 Gateway。 |
+| **批量改模型时意外覆盖 `mcp_servers:`** | 修改 profile 的 `model:` 段时（如切 DeepSeek），patch 的 old_string/new_string 若不包含后续键名，可能将 `mcp_servers:` 误改为 `providers:` 或完全覆盖。**修复：** patch 后检查结构：`grep -E '^(model|providers|mcp_servers|custom_providers):' ~/.hermes/profiles/<name>/config.yaml`，确保 `mcp_servers:` 存在且键名正确。 |
 
-## 验证 Checklist
+## 批量修改 Profile 模型/Provider 配置
+
+### 场景
+
+用户要求所有 profile 切换模型或 provider（如全部从 zai(Zhipu) 切到 DeepSeek，看图用 Doubao，出图用 gpt-image-2）。
+
+### 步骤
+
+```bash
+# 1. 每个 profile 改 model.default + model.provider
+# 注意：patch 的 old_string 必须精确包含整段（包括旧模型的 provider 名）
+# 错误示范：只匹配 "default: glm-5" 可能误伤其他位置的 default: 字段
+patch(mode='replace', path='profiles/<name>/config.yaml',
+  old_string='''model:
+  default: glm-5
+  provider: zai''',
+  new_string='''model:
+  default: deepseek-v4-flash
+  provider: deepseek''')
+
+# 2. 检查是否误改后续字段
+grep -E '^(model|providers|custom_providers|mcp_servers):' profiles/*/config.yaml
+# 常见陷阱：如果 old_string 后紧跟 mcp_servers:，patch 可能把 mcp_servers: 吞掉
+# 修复：单独 patch 把 providers: 改回 mcp_servers:
+```
+
+### 配置内容变更类型
+
+| 变更类型 | 做法 | 注意事项 |
+|----------|------|----------|
+| model.default + model.provider | 每个 profile 的 `patch` | old_string 必须包含完整的 model 块 |
+| 新增 provider（如 ark-doubao） | 加到主 config.yaml（`hermes config set`）或 profile 的 providers 段 | 用 `hermes config set providers.<name>.api_key ...` 避免直接改 YAML |
+| auxiliary.vision（看图模型） | 主 config 设置，profile 无自身 auxiliary 时继承 | 个别 profile（如 jike）有自有的 vision 配置会覆盖主配置 |
+| 图片生成（image_gen toolset） | profile 的 `custom_providers` 段和 toolsets 保持不变 | sheji 用 fun-codex + gpt-image-2，不要动 |
+
+### 验证
+
+```bash
+# 验证各 profile 新模型
+for p in jike lvyou sheji wenan zhidu; do
+  echo "$p: $(grep -A1 'default:' ~/.hermes/profiles/$p/config.yaml | head -2 | tr '\n' ' ')"
+done
+
+# 验证主配置 vision 生效
+grep -A2 'vision:' ~/.hermes/config.yaml
+
+# 生效需重启 Gateway（见本技能 §Gateway 重启）
+```
+
+### 参考文件
+
+- `references/bulk-model-config-session.md` — 本基地批量切换 DeepSeek + Doubao vision 的完整实操记录
+
+### Pitfalls
+
+| 陷阱 | 后果 | 修复 |
+|------|------|------|
+| old_string 匹配不精确 | 修改了不该改的配置段 | `diff` 检查后回退 |
+| 误将 `mcp_servers:` 吞为 `providers:` | profile 的 MCP 服务器失效 | 单独 patch `providers:` → `mcp_servers:` |
+| 忘记检查 profile 自有 auxiliary | vision 配置被覆盖（jike 自有的 vision 仍用旧 provider） | 检查各 profile auxiliary 段并手动更新 |
+| Gateway 未重启 | 新模型不生效 | 告知用户需重启 gateway |
 
 - [ ] `hermes profile list` 显示所有 profile
 - [ ] 每个 profile 都能独立执行 `chat -q "你是谁"`

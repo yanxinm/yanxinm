@@ -35,5 +35,22 @@ tags: [profile, switching, multi-role, team]
 
 - 切换前确认任务归属，不要频繁切换
 - 专项任务完成后，提醒用户或在下一次对话开始时切回 default
-- sheji 使用 agnes-2.0-flash 做文本，gpt-image-2 做图像（通过 fun-codex provider）
-- 其他所有 profile 统一使用 agnes-2.0-flash 模型
+
+## 模型路由规则（2026-06-22 起生效）
+
+| Profile | 对话模型 | 视觉分析（看图） | 图像生成 |
+|---------|----------|-----------------|---------|
+| default | DeepSeek V4 Flash (deepseek provider) | Doubao (ark-doubao provider) | — |
+| jike | DeepSeek V4 Flash | Doubao | — |
+| lvyou | DeepSeek V4 Flash | Doubao (继承主配置) | — |
+| sheji | DeepSeek V4 Flash | Doubao (继承主配置) | **gpt-image-2** via fun-codex (apikey-image-gen 技能) |
+| wenan | DeepSeek V4 Flash | Doubao (继承主配置) | — |
+| zhidu | DeepSeek V4 Flash | Doubao (继承主配置) | — |
+
+### 说明
+
+- **DeepSeek V4 Flash** 是所有 profile 的默认对话模型
+- **Doubao**（`ark-doubao` provider, `doubao-seed-1-6-vision-250815`）负责所有视觉/看图任务。主配置中设置了 `auxiliary.vision`，未覆盖的 profile 自动继承
+- **sheji** 出图走 `apikey-image-gen` 技能，通过 Hermes Web UI → fun-codex provider → gpt-image-2
+- 主配置已定义 `ark-doubao` provider（ark.cn-beijing.volces.com），各 profile 无需重复
+- 配置修改路径：`~/.hermes/config.yaml`（主配置）及各 `~/.hermes/profiles/<name>/config.yaml`

@@ -179,4 +179,40 @@ Successful responses include:
 }
 ```
 
-If the response code is `missing_fun_codex_provider`, tell the user to configure `fun-codex` in the selected/requested profile's `config.yaml`.
+## Troubleshooting
+
+### `missing_fun_codex_provider` error
+
+The profile's `config.yaml` has `fun-codex` under `providers` (model/chat use) but not under `custom_providers` (image generation use). These are separate sections.
+
+**Fix**: Add `fun-codex` to `custom_providers` programmatically on the base machine:
+
+```python
+import yaml
+path = '/home/miao/.hermes/profiles/jike/config.yaml'  # adjust profile
+with open(path) as f:
+    cfg = yaml.safe_load(f)
+if 'custom_providers' not in cfg:
+    cfg['custom_providers'] = []
+if not any(p.get('name') == 'fun-codex' for p in cfg['custom_providers']):
+    fun = cfg['providers']['fun-codex']
+    cfg['custom_providers'].append({
+        'name': 'fun-codex',
+        'base_url': fun['api'],
+        'api_key': fun['api_key'],
+        'model': 'gpt-5.5',
+        'api_mode': 'codex_responses'
+    })
+    with open(path, 'w') as f:
+        yaml.dump(cfg, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+```
+
+### Size constraint
+
+gpt-image-2 requires total pixels between **655,360** and **8,294,400**.
+- 512×512 (262,144) → ❌ too small
+- 1024×1024 (1,048,576) → ✅ OK
+- 1024×1440 (1,474,560) → ✅ OK
+- 3840×2160 (8,294,400) → ✅ at limit
+
+Error: `size must contain between 655360 and 8294400 total pixels`.
